@@ -1,2 +1,2 @@
 # ShaderCreator
-Node based website for creating and previewing glsl shaders.
+Website for creating and previewing glsl shaders.
