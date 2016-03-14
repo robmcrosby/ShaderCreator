@@ -4,6 +4,7 @@
   "description": "Shader creating website.",
   "main": "client.js",
   "scripts": {
+    "dev": "./node_modules/.bin/webpack-dev-server --content-base . --inline --hot",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
