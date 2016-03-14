@@ -1,13 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-class Layout extends React.Component {
+import Layout from "./Layout";
+
+class ClientState extends React.Component {
 	render() {
 		return (
-			<h1>Shader Creator</h1>
+			<div>
+				<Layout />
+			</div>
 		);
 	}
 }
 
 const app = document.getElementById('app');
-ReactDOM.render(<Layout/>, app);
+ReactDOM.render(<ClientState />, app);
