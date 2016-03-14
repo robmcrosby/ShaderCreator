@@ -1,0 +1,22 @@
+{
+  "name": "shader_creator",
+  "version": "1.0.0",
+  "description": "Shader creating website.",
+  "main": "client.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robmcrosby/ShaderCreator.git"
+  },
+  "keywords": [
+    "glsl"
+  ],
+  "author": "Robert M. Crosby",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/robmcrosby/ShaderCreator/issues"
+  },
+  "homepage": "https://github.com/robmcrosby/ShaderCreator#readme"
+}
