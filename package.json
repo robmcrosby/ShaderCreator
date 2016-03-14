@@ -18,5 +18,12 @@
   "bugs": {
     "url": "https://github.com/robmcrosby/ShaderCreator/issues"
   },
-  "homepage": "https://github.com/robmcrosby/ShaderCreator#readme"
+  "homepage": "https://github.com/robmcrosby/ShaderCreator#readme",
+  "dependencies": {
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
+    "react-router": "^2.0.1",
+    "webpack": "^1.12.14",
+    "webpack-dev-server": "^1.14.1"
+  }
 }
