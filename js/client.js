@@ -2,27 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import Layout from "./Layout";
+import Shader from "./Shader";
 
 class ClientState extends React.Component {
 	constructor() {
 		super();
-		this.state = {
-			shader: {
-				diffuse: {
-					label: 'Diffuse Shading',
-					value: 1,
-					options: ['Disabled', 'Lambert', 'Oren-Nayar', 'Toon', 'Minnaert', 'Fresnel'],
-				},
-				specular: {
-					label: 'Specular Shading',
-					value: 1,
-					options: ['Disabled', 'CookTorr', 'Phong', 'Blinn', 'Toon', 'Wardlso'],
-				},
-			},
-		};
+		this.state = {shader: new Shader()};
 	}
 	updateShader(id, value) {
-		console.log("Change Value of: " + id + " to: " + value);
 		const shader = this.state.shader;
 		shader[id].value = value;
 		this.setState({
