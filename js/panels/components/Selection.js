@@ -1,14 +1,23 @@
 import React from "react";
 
 export default class Selection extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	handleChange(e) {
+		console.log("Handle Selection Change");
+		this.props.onChange(this.props.id, e.target.value);
+	}
+
 	render() {
+		const {label, options, value} = this.props;
+
 		return (
 			<div>
-			<span>{this.props.label}: </span>
-			<select>
-				<option>Option 1</option>
-				<option>Option 2</option>
-				<option>Option 3</option>
+			<label>{this.props.label}: </label>
+			<select ref="menu" value={value} onChange={::this.handleChange}>
+				{options.map((o, i) => (<option key={i} value={i}>{o}</option>))}
 			</select>
 			</div>
 		);
