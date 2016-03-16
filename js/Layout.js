@@ -14,10 +14,12 @@ export default class Layout extends React.Component {
 
 	render() {
 		return (
-			<div>
+			<div class="container">
 				<h1>Shader Creator</h1>
-				<Properties shader={this.props.shader} updateShader={::this.updateShader} />
-				<Source shader={this.props.shader} />
+				<div class="row">
+					<Properties shader={this.props.shader} updateShader={::this.updateShader} />
+					<Source shader={this.props.shader} />
+				</div>
 			</div>
 		);
 	}

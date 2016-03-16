@@ -20,6 +20,7 @@ export default class Source extends React.Component {
 			source = this.props.shader.fragmentSrc();
 
 		return (
+			<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 				<ul class="nav nav-pills">
@@ -31,7 +32,10 @@ export default class Source extends React.Component {
 					</li>
 				</ul>
 				</div>
-				<div class="panel-body">{source}</div>
+				<div class="panel-body">
+					<div class="well">{source}</div>
+				</div>
+			</div>
 			</div>
 		);
 	}
