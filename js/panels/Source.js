@@ -25,10 +25,10 @@ export default class Source extends React.Component {
 				<div class="panel-heading">
 				<ul class="nav nav-pills">
   				<li role="presentation" class={view === 'vert' ? 'active' : ''}>
-						<a href="#" id='vert' onClick={::this.viewChange}>Vertex</a>
+						<a href="#" id='vert' onClick={this.viewChange.bind(this)}>Vertex</a>
 					</li>
   				<li role="presentation" class={view === 'frag' ? 'active' : ''}>
-						<a href="#" id='frag' onClick={::this.viewChange}>Fragment</a>
+						<a href="#" id='frag' onClick={this.viewChange.bind(this)}>Fragment</a>
 					</li>
 				</ul>
 				</div>

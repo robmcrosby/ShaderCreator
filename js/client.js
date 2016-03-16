@@ -20,7 +20,7 @@ class ClientState extends React.Component {
 	render() {
 		return (
 			<div>
-				<Layout shader={this.state.shader} updateShader={::this.updateShader}/>
+				<Layout shader={this.state.shader} updateShader={this.updateShader.bind(this)}/>
 			</div>
 		);
 	}

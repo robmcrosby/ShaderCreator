@@ -1,6 +1,7 @@
 import React from "react";
 
-import Selection from "./components/Selection"
+import Selection from "./components/Selection";
+import CheckBox from "./components/CheckBox";
 
 export default class Properties extends React.Component {
 	constructor(props) {
@@ -12,8 +13,7 @@ export default class Properties extends React.Component {
 	}
 
 	render() {
-		const diffuse = this.props.shader.diffuse;
-		const specular = this.props.shader.specular;
+		const {diffuseEnable, diffuseMethod, specularEnable, specularMethod} = this.props.shader;
 
 		return (
 			<div class="col-md-6">
@@ -22,8 +22,10 @@ export default class Properties extends React.Component {
 					<h4>Properties</h4>
 				</div>
 				<div class="panel-body">
-					<Selection id="diffuse" label={diffuse.label} options={diffuse.options} value={diffuse.value} onChange={::this.updateShader}/>
-					<Selection id="specular" label={specular.label} options={specular.options} value={specular.value} onChange={::this.updateShader}/>
+					<CheckBox id="diffuseEnable" label={diffuseEnable.label} option={diffuseEnable.option} value={diffuseEnable.value} onChange={this.updateShader.bind(this)}/>
+					<Selection id="diffuseMethod" label={diffuseMethod.label} options={diffuseMethod.options} value={diffuseMethod.value} onChange={this.updateShader.bind(this)}/>
+					<CheckBox id="specularEnable" label={specularEnable.label} option={specularEnable.option} value={specularEnable.value} onChange={this.updateShader.bind(this)}/>
+					<Selection id="specularMethod" label={specularMethod.label} options={specularMethod.options} value={specularMethod.value} onChange={this.updateShader.bind(this)}/>
 				</div>
 			</div>
 			</div>

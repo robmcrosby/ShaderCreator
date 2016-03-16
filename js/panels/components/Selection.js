@@ -14,9 +14,9 @@ export default class Selection extends React.Component {
 
 		return (
 			<div	class="form-group row">
-				<label class="col-sm-6 form-control-label">{this.props.label}: </label>
-				<div class="col-sm-6">
-					<select ref="menu" value={value} onChange={::this.onChange} class="form-control">
+				<label class="col-sm-4 form-control-label">{label}</label>
+				<div class="col-sm-8">
+					<select ref="menu" value={value} onChange={this.onChange.bind(this)} class="form-control">
 						{options.map((o, i) => (<option key={i} value={i}>{o}</option>))}
 					</select>
 				</div>
