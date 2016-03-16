@@ -3,7 +3,7 @@ import React from "react";
 export default class Source extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {view: 'vertex'};
+		this.state = {view: 'vert'};
 	}
 
 	viewChange(e) {
@@ -14,21 +14,24 @@ export default class Source extends React.Component {
 	render() {
 		var view = this.state.view;
 		var source = '';
-		if (view === 'vertex')
+		if (view === 'vert')
 			source = this.props.shader.vertexSrc();
-		else if (view === 'fragment')
+		else if (view === 'frag')
 			source = this.props.shader.fragmentSrc();
 
 		return (
-			<div>
-				<h2>Source</h2>
-				<div>
-					<button id='vertex' onClick={::this.viewChange}>Vertex</button>
-					<button id='fragment' onClick={::this.viewChange}>Fragment</button>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+				<ul class="nav nav-pills">
+  				<li role="presentation" class={view === 'vert' ? 'active' : ''}>
+						<a href="#" id='vert' onClick={::this.viewChange}>Vertex</a>
+					</li>
+  				<li role="presentation" class={view === 'frag' ? 'active' : ''}>
+						<a href="#" id='frag' onClick={::this.viewChange}>Fragment</a>
+					</li>
+				</ul>
 				</div>
-				<div>
-					<textarea value={source} readOnly />
-				</div>
+				<div class="panel-body">{source}</div>
 			</div>
 		);
 	}
