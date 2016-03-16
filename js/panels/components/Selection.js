@@ -10,13 +10,14 @@ export default class Selection extends React.Component {
 	}
 
 	render() {
-		const {label, options, value} = this.props;
+		const {label, options, value, disabled} = this.props;
+		var disable = disabled !== undefined && disabled;
 
 		return (
 			<div	class="form-group row">
-				<label class="col-sm-4 form-control-label">{label}</label>
-				<div class="col-sm-8">
-					<select ref="menu" value={value} onChange={this.onChange.bind(this)} class="form-control">
+				<label class="col-xs-4 form-control-label">{label}</label>
+				<div class="col-xs-8">
+					<select ref="menu" value={value} onChange={this.onChange.bind(this)} disabled={disable} class="form-control">
 						{options.map((o, i) => (<option key={i} value={i}>{o}</option>))}
 					</select>
 				</div>

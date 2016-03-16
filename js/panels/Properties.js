@@ -23,9 +23,9 @@ export default class Properties extends React.Component {
 				</div>
 				<div class="panel-body">
 					<CheckBox id="diffuseEnable" label={diffuseEnable.label} option={diffuseEnable.option} value={diffuseEnable.value} onChange={this.updateShader.bind(this)}/>
-					<Selection id="diffuseMethod" label={diffuseMethod.label} options={diffuseMethod.options} value={diffuseMethod.value} onChange={this.updateShader.bind(this)}/>
+					<Selection id="diffuseMethod" label={diffuseMethod.label} options={diffuseMethod.options} value={diffuseMethod.value} disabled={!diffuseEnable.value} onChange={this.updateShader.bind(this)}/>
 					<CheckBox id="specularEnable" label={specularEnable.label} option={specularEnable.option} value={specularEnable.value} onChange={this.updateShader.bind(this)}/>
-					<Selection id="specularMethod" label={specularMethod.label} options={specularMethod.options} value={specularMethod.value} onChange={this.updateShader.bind(this)}/>
+					<Selection id="specularMethod" label={specularMethod.label} options={specularMethod.options} value={specularMethod.value} disabled={!specularEnable.value} onChange={this.updateShader.bind(this)}/>
 				</div>
 			</div>
 			</div>

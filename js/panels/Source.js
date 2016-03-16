@@ -7,12 +7,12 @@ export default class Source extends React.Component {
 	}
 
 	viewChange(e) {
-		console.log("View Change");
 		this.setState({view: e.target.id});
 	}
 
 	render() {
 		var view = this.state.view;
+
 		var source = '';
 		if (view === 'vert')
 			source = this.props.shader.vertexSrc();
