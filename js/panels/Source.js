@@ -23,16 +23,17 @@ export default class Source extends React.Component {
 			<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-				<ul class="nav nav-pills">
-  				<li role="presentation" class={view === 'vert' ? 'active' : ''}>
-						<a href="#" id='vert' onClick={this.viewChange.bind(this)}>Vertex</a>
-					</li>
-  				<li role="presentation" class={view === 'frag' ? 'active' : ''}>
-						<a href="#" id='frag' onClick={this.viewChange.bind(this)}>Fragment</a>
-					</li>
-				</ul>
+					<h4>Shader Source</h4>
 				</div>
 				<div class="panel-body">
+					<ul class="nav nav-tabs">
+	  				<li role="presentation" class={view === 'vert' ? 'active' : ''}>
+							<a href="#" id='vert' onClick={this.viewChange.bind(this)}>Vertex</a>
+						</li>
+	  				<li role="presentation" class={view === 'frag' ? 'active' : ''}>
+							<a href="#" id='frag' onClick={this.viewChange.bind(this)}>Fragment</a>
+						</li>
+					</ul>
 					<pre>{source}</pre>
 				</div>
 			</div>
