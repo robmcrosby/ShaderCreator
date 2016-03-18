@@ -9,7 +9,7 @@ export default class Shader {
 		this.diffuseMethod = {
 			label: 'Diffuse Method',
 			value: 0,
-			options: ['Lambert', 'Oren-Nayar', 'Toon', 'Minnaert', 'Fresnel', 'Shadeless'],
+			options: ['Lambert', 'Oren-Nayar', 'Toon', 'Minnaert', 'Fresnel'],
 		}
 		this.specularEnable = {
 			label: 'Specular Shading',
@@ -148,11 +148,99 @@ export default class Shader {
 
 	fragmentStructs() {
 		var str = '';
+
+		// Camera Struct
+		str += 'struct Camera {\n';
+		str += '  mat4 projection;\n';
+		str += '  mat4 view;\n';
+		str += '  vec4 position;\n';
+	  str += '};\n\n';
+
+		// Material Struct
+		str += 'struct Material {\n';
+		str += '  vec4 ambiantColor;\n';
+		str += '  vec4 diffuseColor;\n';
+		str += '  vec4 specularColor;\n';
+		str += '  vec4 shadingParams;\n';
+		str += '};\n\n';
+
 		return str;
+	}
+
+	diffuseFunction() {
+		var str = 'vec4 diffuse(vec3 position, vec3 normal, vec2 params, mat4 light) {\n';
+		if (this.diffuseMethod.value == 0) {
+			// Lambert
+			str += '  // Lambert\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.diffuseMethod.value == 1) {
+			// Oren-Nayar
+			str += '  // Oren-Nayar\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.diffuseMethod.value == 2) {
+			// Toon
+			str += '  // Toon\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.diffuseMethod.value == 3) {
+			// Minnaert
+			str += '  // Minnaert\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.diffuseMethod.value == 4) {
+			// Fresnel
+			str += '  // Fresnel\n';
+			str += '  return 0.0;\n';
+		}
+		else {
+			// Shadeless
+			str += '  // Shadeless\n';
+			str += '  return 0.0;\n';
+		}
+		return str + '}\n\n';
+	}
+
+	specularFunction() {
+		var str = 'vec4 specular(vec3 position, vec3 normal, vec3 camera, vec4 params, mat4 light) {\n';
+		if (this.specularMethod.value == 0) {
+			// Lambert
+			str += '  // CookTorr\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.specularMethod.value == 1) {
+			// Phong
+			str += '  // Phong\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.specularMethod.value == 2) {
+			// Blinn
+			str += '  // Blinn\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.specularMethod.value == 3) {
+			// Toon
+			str += '  // Toon\n';
+			str += '  return 0.0;\n';
+		}
+		else if (this.specularMethod.value == 4) {
+			// Wardlso
+			str += '  // Wardlso\n';
+			str += '  return 0.0;\n';
+		}
+		else {
+			// Shadeless
+			str += '  // Shadeless\n';
+			str += '  return 0.0;\n';
+		}
+		return str + '}\n\n';
 	}
 
 	fragmentFunctions() {
 		var str = '';
+		str += this.diffuseFunction();
+		str += this.specularFunction();
 		return str;
 	}
 
@@ -163,12 +251,16 @@ export default class Shader {
 
 	fragmentUniforms() {
 		var str = '';
-		str += 'uniform mediump vec4 color;\n';
+		str += 'uniform Material material;\n';
+		str += 'uniform Camera camera;\n';
+		str += 'uniform mat4 lights[NUM_LIGHTS];\n';
+		str += '\n';
 		return str;
 	}
 
 	fragmentInput() {
 		var str = '';
+		str += 'varying vec3 v_position;\n';
 		str += 'varying vec3 v_normal;\n';
 		str += '\n';
 		return str;
@@ -176,7 +268,24 @@ export default class Shader {
 
 	fragmentMain() {
 		var str = 'void main() {\n';
-		str += '  gl_FragColor = vec4(color.xyz * dot(v_normal, vec3(0.0, 1.0, 0.0)), color.w);\n';
+
+		// Normalize the surface normal.
+		str += '  vec3 normal = normalize(v_normal);\n'
+		str += '  vec4 diffuseColor = material.diffuseColor;\n';
+		str += '  vec4 specularColor = material.specularColor;\n';
+
+		// Initalize the output color to the ambiant component.
+		str += '  gl_FragColor = material.ambiantColor;\n';
+
+		// Calculate and add the diffuse and specular colors for each light.
+		str += '  for (int i = 0; i < NUM_LIGHTS; ++i) {\n';
+		str += '    float d = diffuse(v_position, normal, material.shadingParams.xy, lights[i]);\n';
+		str += '    float s = specular(v_position, normal, camera.position.xyz, material.shadingParams.zw, lights[i]);\n';
+		str += '    gl_FragColor += d * (diffuseColor * lights[i].x) + s * (specularColor * lights[i].y);\n';
+		str += '  }\n';
+
+		// Always set the alpha component to 1.0.
+		str += '  gl_FragColor.w = 1.0;\n';
 		str += '}\n';
 		return str;
 	}
