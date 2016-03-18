@@ -15,9 +15,9 @@ export default class Source extends React.Component {
 
 		var source = '';
 		if (view === 'vert')
-			source = this.props.shader.vertexSrc();
+			source = this.props.shader.createVertexSource();
 		else if (view === 'frag')
-			source = this.props.shader.fragmentSrc();
+			source = this.props.shader.createFragmentSource();
 
 		return (
 			<div class="col-md-6">
@@ -33,7 +33,7 @@ export default class Source extends React.Component {
 				</ul>
 				</div>
 				<div class="panel-body">
-					<div class="well">{source}</div>
+					<pre>{source}</pre>
 				</div>
 			</div>
 			</div>
