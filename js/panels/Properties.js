@@ -1,19 +1,30 @@
 import React from "react";
 
-import Selection from "./components/Selection";
-import CheckBox from "./components/CheckBox";
+import ShadingProperties from "./properties/ShadingProperties";
+import InputProperties from "./properties/InputProperties";
 
 export default class Properties extends React.Component {
 	constructor(props) {
 		super(props);
+		this.state = {view: 'shading'};
 	}
 
 	updateShader(id, value) {
 		this.props.updateShader(id, value);
 	}
 
+	viewChange(e) {
+		this.setState({view: e.target.id});
+	}
+
 	render() {
-		const {diffuseEnable, diffuseMethod, specularEnable, specularMethod} = this.props.shader;
+		var view = this.state.view;
+		var viewTag;
+
+		if (view === 'shading')
+		 	viewTag = <ShadingProperties shader={this.props.shader} updateShader={this.updateShader.bind(this)} />;
+		else
+			viewTag = <InputProperties shader={this.props.shader} updateShader={this.updateShader.bind(this)} />
 
 		return (
 			<div class="col-md-6">
@@ -23,19 +34,14 @@ export default class Properties extends React.Component {
 				</div>
 				<div class="panel-body">
 					<ul class="nav nav-tabs">
-						<li role="presentation">
-							<a href="#">Shading</a>
+						<li role="presentation" class={view === 'shading' ? 'active' : ''}>
+							<a href="#" id='shading' onClick={this.viewChange.bind(this)}>Shading</a>
 						</li>
-						<li role="presentation">
-							<a href="#">Input</a>
+						<li role="presentation" class={view === 'input' ? 'active' : ''}>
+							<a href="#" id='input' onClick={this.viewChange.bind(this)}>Input</a>
 						</li>
 					</ul>
-					<div class="well">
-						<CheckBox id="diffuseEnable" label={diffuseEnable.label} option={diffuseEnable.option} value={diffuseEnable.value} onChange={this.updateShader.bind(this)}/>
-						<Selection id="diffuseMethod" label={diffuseMethod.label} options={diffuseMethod.options} value={diffuseMethod.value} disabled={!diffuseEnable.value} onChange={this.updateShader.bind(this)}/>
-						<CheckBox id="specularEnable" label={specularEnable.label} option={specularEnable.option} value={specularEnable.value} onChange={this.updateShader.bind(this)}/>
-						<Selection id="specularMethod" label={specularMethod.label} options={specularMethod.options} value={specularMethod.value} disabled={!specularEnable.value} onChange={this.updateShader.bind(this)}/>
-					</div>
+					{viewTag}
 				</div>
 			</div>
 			</div>
