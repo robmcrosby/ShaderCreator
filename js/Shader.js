@@ -1,6 +1,11 @@
 
 export default class Shader {
 	constructor() {
+		this.ambiantColorInput = {
+			label: 'Ambiant Color Input',
+			value: 0,
+			options: ['Ambiant Color', 'Vertex Color', 'Texture Color'],
+		}
 		this.diffuseEnable = {
 			label: 'Diffuse Shading',
 			value: true,
@@ -10,6 +15,11 @@ export default class Shader {
 			label: 'Diffuse Method',
 			value: 0,
 			options: ['Lambert', 'Oren-Nayar', 'Toon', 'Minnaert', 'Fresnel'],
+		}
+		this.diffuseColorInput = {
+			label: 'Diffuse Color Input',
+			value: 0,
+			options: ['Diffuse Color', 'Vertex Color', 'Texture Color'],
 		}
 		this.specularEnable = {
 			label: 'Specular Shading',

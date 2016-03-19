@@ -19,12 +19,12 @@ export default class Properties extends React.Component {
 
 	render() {
 		var view = this.state.view;
-		var viewTag;
+		var propertiesView;
 
 		if (view === 'shading')
-		 	viewTag = <ShadingProperties shader={this.props.shader} updateShader={this.updateShader.bind(this)} />;
+		 	propertiesView = <ShadingProperties shader={this.props.shader} updateShader={this.updateShader.bind(this)} />;
 		else
-			viewTag = <InputProperties shader={this.props.shader} updateShader={this.updateShader.bind(this)} />
+			propertiesView = <InputProperties shader={this.props.shader} updateShader={this.updateShader.bind(this)} />
 
 		return (
 			<div class="col-md-6">
@@ -41,7 +41,7 @@ export default class Properties extends React.Component {
 							<a href="#" id='input' onClick={this.viewChange.bind(this)}>Input</a>
 						</li>
 					</ul>
-					{viewTag}
+					{propertiesView}
 				</div>
 			</div>
 			</div>

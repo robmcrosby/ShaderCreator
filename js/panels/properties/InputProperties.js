@@ -13,11 +13,12 @@ export default class InputProperties extends React.Component {
 	}
 
 	render() {
-		//const {diffuseEnable, diffuseMethod, specularEnable, specularMethod} = this.props.shader;
+		const {ambiantColorInput, diffuseColorInput} = this.props.shader;
 
 		return (
 			<div class="well">
-				<h3>Input Properties</h3>
+			<Selection id="ambiantColorInput" label={ambiantColorInput.label} options={ambiantColorInput.options} value={ambiantColorInput.value} onChange={this.updateShader.bind(this)}/>
+				<Selection id="diffuseColorInput" label={diffuseColorInput.label} options={diffuseColorInput.options} value={diffuseColorInput.value} onChange={this.updateShader.bind(this)}/>
 			</div>
 		);
 	}
