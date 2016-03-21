@@ -1,4 +1,5 @@
 import React from "react";
+import {bindAll} from "class-bind";
 
 export default class Source extends React.Component {
 	constructor(props) {
@@ -28,10 +29,10 @@ export default class Source extends React.Component {
 				<div class="panel-body">
 					<ul class="nav nav-tabs">
 	  				<li role="presentation" class={view === 'vert' ? 'active' : ''}>
-							<a href="#" id='vert' onClick={this.viewChange.bind(this)}>Vertex</a>
+							<a href="#" id='vert' onClick={this.viewChange}>Vertex</a>
 						</li>
 	  				<li role="presentation" class={view === 'frag' ? 'active' : ''}>
-							<a href="#" id='frag' onClick={this.viewChange.bind(this)}>Fragment</a>
+							<a href="#" id='frag' onClick={this.viewChange}>Fragment</a>
 						</li>
 					</ul>
 					<pre>{source}</pre>
@@ -41,3 +42,5 @@ export default class Source extends React.Component {
 		);
 	}
 }
+
+bindAll(Source.prototype);

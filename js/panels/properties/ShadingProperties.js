@@ -1,4 +1,5 @@
 import React from "react";
+import {bindAll} from "class-bind";
 
 import Selection from "../components/Selection";
 import CheckBox from "../components/CheckBox";
@@ -17,11 +18,13 @@ export default class ShadingProperties extends React.Component {
 
 		return (
 			<div class="well">
-				<CheckBox id="diffuseEnable" label={diffuseEnable.label} option={diffuseEnable.option} value={diffuseEnable.value} onChange={this.updateShader.bind(this)}/>
-				<Selection id="diffuseMethod" label={diffuseMethod.label} options={diffuseMethod.options} value={diffuseMethod.value} disabled={!diffuseEnable.value} onChange={this.updateShader.bind(this)}/>
-				<CheckBox id="specularEnable" label={specularEnable.label} option={specularEnable.option} value={specularEnable.value} onChange={this.updateShader.bind(this)}/>
-				<Selection id="specularMethod" label={specularMethod.label} options={specularMethod.options} value={specularMethod.value} disabled={!specularEnable.value} onChange={this.updateShader.bind(this)}/>
+				<CheckBox id="diffuseEnable" label={diffuseEnable.label} option={diffuseEnable.option} value={diffuseEnable.value} onChange={this.updateShader}/>
+				<Selection id="diffuseMethod" label={diffuseMethod.label} options={diffuseMethod.options} value={diffuseMethod.value} disabled={!diffuseEnable.value} onChange={this.updateShader}/>
+				<CheckBox id="specularEnable" label={specularEnable.label} option={specularEnable.option} value={specularEnable.value} onChange={this.updateShader}/>
+				<Selection id="specularMethod" label={specularMethod.label} options={specularMethod.options} value={specularMethod.value} disabled={!specularEnable.value} onChange={this.updateShader}/>
 			</div>
 		);
 	}
 }
+
+bindAll(ShadingProperties.prototype);

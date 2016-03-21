@@ -1,4 +1,5 @@
 import React from "react";
+import {bindAll} from "class-bind";
 
 export default class Selection extends React.Component {
 	constructor(props) {
@@ -17,7 +18,7 @@ export default class Selection extends React.Component {
 			<div	class="form-group row">
 				<label class="col-xs-4 form-control-label">{label}</label>
 				<div class="col-xs-8">
-					<select ref="menu" value={value} onChange={this.onChange.bind(this)} disabled={disable} class="form-control">
+					<select ref="menu" value={value} onChange={this.onChange} disabled={disable} class="form-control">
 						{options.map((o, i) => (<option key={i} value={i}>{o}</option>))}
 					</select>
 				</div>
@@ -25,3 +26,5 @@ export default class Selection extends React.Component {
 		);
 	}
 }
+
+bindAll(Selection.prototype);

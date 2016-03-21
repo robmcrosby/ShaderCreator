@@ -1,4 +1,5 @@
 import React from "react";
+import {bindAll} from "class-bind";
 
 import Properties from "./panels/Properties";
 import Source from "./panels/Source";
@@ -17,10 +18,12 @@ export default class Layout extends React.Component {
 			<div class="container">
 				<h1>Shader Creator</h1>
 				<div class="row">
-					<Properties shader={this.props.shader} updateShader={this.updateShader.bind(this)} />
+					<Properties shader={this.props.shader} updateShader={this.updateShader} />
 					<Source shader={this.props.shader} />
 				</div>
 			</div>
 		);
 	}
 }
+
+bindAll(Layout.prototype);

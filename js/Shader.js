@@ -56,7 +56,6 @@ export default class Shader {
 		src += this.fragmentDefines();
 		src += this.fragmentStructs();
 		src += this.fragmentFunctions();
-		src += this.fragmentAttributes();
 		src += this.fragmentUniforms();
 		src += this.fragmentInput();
 		src += this.fragmentMain();
@@ -266,11 +265,6 @@ export default class Shader {
 		var str = '';
 		str += this.diffuseEnabled() ? this.diffuseFunction() : '';
 		str += this.specularEnabled() ? this.specularFunction() : '';
-		return str;
-	}
-
-	fragmentAttributes() {
-		var str = '';
 		return str;
 	}
 
