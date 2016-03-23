@@ -31,15 +31,19 @@ export default class Shader {
 			value: 0,
 			options: ['CookTorr', 'Phong', 'Blinn', 'Toon', 'Wardlso'],
 		}
+		this.supportedVersions = [
+			{version: 'gl_es_20', label: 'OpenGL ES 2.0', header: '#version 100',    type:'embeded'},
+			{version: 'gl_es_30', label: 'OpenGL ES 3.0', header: '#version 300 es', type:'embeded'},
+			{version: 'gl_41',    label: 'OpenGL 4.1',    header: '#version 410',    type:'desktop'},
+		];
 	}
 
 	diffuseEnabled() {return this.diffuseEnable.value;}
 	specularEnabled() {return this.specularEnable.value;}
 	shadingEnabled() {return this.diffuseEnabled() || this.specularEnabled();}
 
-	createVertexSource() {
-		var src = '';
-		src += this.versionHeader();
+	createVertexSource(version) {
+		var src = version.header + '\n\n';
 		src += this.vertexDefines();
 		src += this.vertexStructs();
 		src += this.vertexFunctions();
@@ -50,9 +54,8 @@ export default class Shader {
 		return src;
 	}
 
-	createFragmentSource() {
-		var src = '';
-		src += this.versionHeader();
+	createFragmentSource(version) {
+		var src = version.header + '\n\n';
 		src += this.fragmentDefines();
 		src += this.fragmentStructs();
 		src += this.fragmentFunctions();
@@ -60,10 +63,6 @@ export default class Shader {
 		src += this.fragmentInput();
 		src += this.fragmentMain();
 		return src;
-	}
-
-	versionHeader() {
-		return '#version 100\n\n';
 	}
 
 
