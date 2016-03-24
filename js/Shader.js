@@ -1,10 +1,10 @@
 
 export default class Shader {
 	constructor() {
-		this.ambiantColorInput = {
-			label: 'Ambiant Color Input',
+		this.ambiantInput = {
+			label: 'Ambiant Color',
 			value: 0,
-			options: ['Ambiant Color', 'Vertex Color', 'Texture Color'],
+			options: ['Material Ambiant Color', 'Vertex Color 1', 'Vertex Color 2', 'Texture 1', 'Texture 2'],
 		}
 		this.diffuseEnable = {
 			label: 'Diffuse Shading',
@@ -16,10 +16,10 @@ export default class Shader {
 			value: 0,
 			options: ['Lambert', 'Oren-Nayar', 'Toon', 'Minnaert', 'Fresnel'],
 		}
-		this.diffuseColorInput = {
-			label: 'Diffuse Color Input',
+		this.diffuseInput = {
+			label: 'Diffuse Color',
 			value: 0,
-			options: ['Diffuse Color', 'Vertex Color', 'Texture Color'],
+			options: ['Material Diffuse Color', 'Vertex Color 1', 'Vertex Color 2', 'Texture 1', 'Texture 2'],
 		}
 		this.specularEnable = {
 			label: 'Specular Shading',
@@ -42,6 +42,38 @@ export default class Shader {
 	specularEnabled() {return this.specularEnable.value;}
 	shadingEnabled() {return this.diffuseEnabled() || this.specularEnabled();}
 
+	ambiantInputType() {return this.ambiantInput.options[this.ambiantInput.value];}
+	diffuseInputType() {return this.diffuseInput.options[this.diffuseInput.value];}
+
+	numberOfVertexColors() {
+		var count = 0;
+
+		var value = this.ambiantInput.value;
+		if (value <= 2)
+			count = Math.max(count, value);
+
+		value = this.diffuseInput.value;
+		if (value <= 2)
+			count = Math.max(count, value);
+
+		return count;
+	}
+	numberOfTextures() {
+		var count = 0;
+
+		var value = this.ambiantInput.value - 2;
+		count = Math.max(count, value);
+
+		value = this.diffuseInput.value - 2;
+		count = Math.max(count, value);
+
+		return count;
+	}
+	numberOfUVs() {
+		// TODO: Update this to handle more than one UV.
+		return this.numberOfTextures() > 0 ? 1 : 0;
+	}
+
 	createVertexSource(version) {
 		var src = '';
 		src += this.vertexDefines(version);
@@ -60,6 +92,7 @@ export default class Shader {
 		src += this.fragmentStructs(version);
 		src += this.fragmentFunctions(version);
 		src += this.fragmentUniforms(version);
+		src += this.fragmentTextures(version);
 		src += this.fragmentInputs(version);
 		src += this.fragmentOutputs(version);
 		src += this.fragmentMain(version);
@@ -124,9 +157,23 @@ export default class Shader {
 
 	vertexInputs(version) {
 		var str = '';
+		// Always add position
 		str += this.vertexInput('vec4', 'position', version);
+
+		// Add normal if there will be shading
 		if (this.shadingEnabled())
 			str += this.vertexInput('vec4', 'normal', version);
+
+		// Add any vertex colors
+		var numColors = this.numberOfVertexColors();
+		for (var i = 0; i < numColors; ++i)
+			str += this.vertexInput('vec4', 'color'+i, version);
+
+		// Add any texture coordinates
+		var numUVs = this.numberOfUVs();
+		for (var i = 0; i < numUVs; ++i)
+			str += this.vertexInput('vec2', 'uv'+i, version);
+
 		return str + '\n';
 	}
 
@@ -145,12 +192,24 @@ export default class Shader {
 
 	vertexOutputs(version) {
 		var str = '';
+
+		// Pass position and normal if there is shading
 		if (this.shadingEnabled()) {
 			str += this.vertexOutput('vec3', 'v_position', version);
 			str += this.vertexOutput('vec3', 'v_normal', version);
-			str += '\n';
 		}
-		return str;
+
+		// Pass any vertex colors
+		var numColors = this.numberOfVertexColors();
+		for (var i = 0; i < numColors; ++i)
+			str += this.vertexOutput('vec4', 'v_color'+i, version);
+
+		// Pass any texture coordinates
+		var numUVs = this.numberOfUVs();
+		for (var i = 0; i < numUVs; ++i)
+			str += this.vertexOutput('vec2', 'v_uv'+i, version);
+
+		return str + '\n';
 	}
 
 	vertexMain(version) {
@@ -158,10 +217,21 @@ export default class Shader {
 		str += '  vec4 pos = transform(model, position);\n';
 		str += '  gl_Position = transform(camera, pos);\n';
 
+		// Assign the position and the rotated normal
 		if (this.shadingEnabled()) {
 			str += '  v_position = pos.xyz;\n';
 			str += '  v_normal = rotate(model.rotation, normal.xyz);\n';
 		}
+
+		// Assign any vertex colors
+		var numColors = this.numberOfVertexColors();
+		for (var i = 0; i < numColors; ++i)
+			str += '  v_color'+i + ' = color'+i + ';\n';
+
+		// Assign any texture coordinates
+		var numUVs = this.numberOfUVs();
+		for (var i = 0; i < numUVs; ++i)
+			str += '  v_uv'+i + ' = uv'+i + ';\n';
 
 		return str + '}\n';
 	}
@@ -290,6 +360,17 @@ export default class Shader {
 		return str;
 	}
 
+	fragmentTextures(version) {
+		var str = '';
+		var numTextures = this.numberOfTextures();
+		if (numTextures > 0) {
+			for (var i = 0; i < numTextures; ++i)
+				str += 'uniform sampler2D texture' + i + ';\n';
+			str += '\n';
+		}
+		return str;
+	}
+
 	fragmentInput(precision, type, name, version) {
 		var str = version.version > 2.0 ? 'in ' : 'varying ';
 		str += version.platform === 'embeded' ? precision+' ' : '';
@@ -301,9 +382,19 @@ export default class Shader {
 		if (this.shadingEnabled()) {
 			str += this.fragmentInput('mediump', 'vec3', 'v_position', version);
 			str += this.fragmentInput('mediump', 'vec3', 'v_normal', version);
-			str += '\n';
 		}
-		return str;
+
+		// Add any vertex colors
+		var numColors = this.numberOfVertexColors();
+		for (var i = 0; i < numColors; ++i)
+			str += this.fragmentInput('mediump', 'vec4', 'v_color'+i, version);
+
+		// Add any texture coordinates
+		var numUVs = this.numberOfUVs();
+		for (var i = 0; i < numUVs; ++i)
+			str += this.fragmentInput('mediump', 'vec2', 'v_uv'+i, version);
+
+		return str + '\n';
 	}
 
 	fragmentOutputs(version) {
@@ -322,7 +413,15 @@ export default class Shader {
 		str += this.specularEnabled() ? '  vec4 specularColor = material.specularColor;\n' : '';
 
 		// Initalize the output color to the ambiant component.
-		str += '  gl_FragColor = material.ambiantColor;\n';
+		str += '  gl_FragColor = material.ambiantColor'
+		if (this.ambiantInput.value > 0 && this.ambiantInput.value <= 2)
+			str += ' * v_color' + (this.ambiantInput.value-1) + ';\n';
+		else if (this.ambiantInput.value > 2) {
+			str += version.version > 2.0 ? ' * texture' : ' * texture2D';
+			str += '(texture' + (this.ambiantInput.value-3) + ', v_uv0);\n';
+		}
+		else
+			str += ';\n';
 
 		if (this.shadingEnabled()) {
 			// Calculate and add the diffuse and specular colors for each light.
