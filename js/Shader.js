@@ -32,9 +32,9 @@ export default class Shader {
 			options: ['CookTorr', 'Phong', 'Blinn', 'Toon', 'Wardlso'],
 		}
 		this.supportedVersions = [
-			{version: 'gl_es_20', label: 'OpenGL ES 2.0', header: '#version 100',    type:'embeded'},
-			{version: 'gl_es_30', label: 'OpenGL ES 3.0', header: '#version 300 es', type:'embeded'},
-			{version: 'gl_41',    label: 'OpenGL 4.1',    header: '#version 410',    type:'desktop'},
+			{label: 'OpenGL ES 2.0', header: '#version 100',    platform:'embeded', version: 2.0},
+			{label: 'OpenGL ES 3.0', header: '#version 300 es', platform:'embeded', version: 3.0},
+			{label: 'OpenGL 4.1',    header: '#version 410',    platform:'desktop', version: 4.1},
 		];
 	}
 
@@ -43,25 +43,26 @@ export default class Shader {
 	shadingEnabled() {return this.diffuseEnabled() || this.specularEnabled();}
 
 	createVertexSource(version) {
-		var src = version.header + '\n\n';
-		src += this.vertexDefines();
-		src += this.vertexStructs();
-		src += this.vertexFunctions();
-		src += this.vertexAttributes();
-		src += this.vertexUniforms();
-		src += this.vertexOutput();
-		src += this.vertexMain();
+		var src = '';
+		src += this.vertexDefines(version);
+		src += this.vertexStructs(version);
+		src += this.vertexFunctions(version);
+		src += this.vertexInputs(version);
+		src += this.vertexUniforms(version);
+		src += this.vertexOutputs(version);
+		src += this.vertexMain(version);
 		return src;
 	}
 
 	createFragmentSource(version) {
-		var src = version.header + '\n\n';
-		src += this.fragmentDefines();
-		src += this.fragmentStructs();
-		src += this.fragmentFunctions();
-		src += this.fragmentUniforms();
-		src += this.fragmentInput();
-		src += this.fragmentMain();
+		var src = '';
+		src += this.fragmentDefines(version);
+		src += this.fragmentStructs(version);
+		src += this.fragmentFunctions(version);
+		src += this.fragmentUniforms(version);
+		src += this.fragmentInputs(version);
+		src += this.fragmentOutputs(version);
+		src += this.fragmentMain(version);
 		return src;
 	}
 
@@ -69,11 +70,12 @@ export default class Shader {
 	/*
 		Vertex Shader Parts
 	*/
-	vertexDefines() {
-		return '';
+	vertexDefines(version) {
+		var str = version.header + '\n\n';
+		return str;
 	}
 
-	vertexStructs() {
+	vertexStructs(version) {
 		var str = '';
 
 		// Camera Struct
@@ -92,7 +94,7 @@ export default class Shader {
 		return str;
 	}
 
-	vertexFunctions() {
+	vertexFunctions(version) {
 		var str = '';
 
 		// Transform To World Space
@@ -115,15 +117,20 @@ export default class Shader {
 		return str;
 	}
 
-	vertexAttributes() {
-		var str = '';
-		str += 'attribute vec4 position;\n';
-    str += this.shadingEnabled() ? 'attribute vec4 normal;\n' : '';
-		str += '\n';
-		return str;
+	vertexInput(type, name, version) {
+		var str = version.version > 2.0 ? 'in' : 'attribute';
+		return str + ' ' + type + ' ' + name + ';\n';
 	}
 
-	vertexUniforms() {
+	vertexInputs(version) {
+		var str = '';
+		str += this.vertexInput('vec4', 'position', version);
+		if (this.shadingEnabled())
+			str += this.vertexInput('vec4', 'normal', version);
+		return str + '\n';
+	}
+
+	vertexUniforms(version) {
 		var str = '';
 		str += 'uniform Camera camera;\n';
 		str += 'uniform Model  model;\n';
@@ -131,17 +138,22 @@ export default class Shader {
 		return str;
 	}
 
-	vertexOutput() {
+	vertexOutput(type, name, version) {
+		var str = version.version > 2.0 ? 'out ' : 'varying ';
+		return str + type + ' ' + name + ';\n';
+	}
+
+	vertexOutputs(version) {
 		var str = '';
 		if (this.shadingEnabled()) {
-			str += 'varying vec3 v_position;\n';
-			str += 'varying vec3 v_normal;\n';
+			str += this.vertexOutput('vec3', 'v_position', version);
+			str += this.vertexOutput('vec3', 'v_normal', version);
 			str += '\n';
 		}
 		return str;
 	}
 
-	vertexMain() {
+	vertexMain(version) {
 		var str = 'void main() {\n';
 		str += '  vec4 pos = transform(model, position);\n';
 		str += '  gl_Position = transform(camera, pos);\n';
@@ -158,8 +170,9 @@ export default class Shader {
 	/*
 		Fragment Shader Parts
 	*/
-	fragmentDefines() {
-		var str = '';
+	fragmentDefines(version) {
+		var str = version.header + '\n\n';
+
 		if (this.shadingEnabled()) {
 			str += '#define NUM_LIGHTS 8\n';
 			str += '\n';
@@ -167,7 +180,7 @@ export default class Shader {
 		return str;
 	}
 
-	fragmentStructs() {
+	fragmentStructs(version) {
 		var str = '';
 
 		if (this.specularEnabled()) {
@@ -190,7 +203,7 @@ export default class Shader {
 		return str;
 	}
 
-	diffuseFunction() {
+	diffuseFunction(version) {
 		var str = 'vec4 diffuse(vec3 position, vec3 normal, vec2 params, mat4 light) {\n';
 		if (this.diffuseMethod.value == 0) {
 			// Lambert
@@ -225,7 +238,7 @@ export default class Shader {
 		return str + '}\n\n';
 	}
 
-	specularFunction() {
+	specularFunction(version) {
 		var str = 'vec4 specular(vec3 position, vec3 normal, vec3 camera, vec4 params, mat4 light) {\n';
 		if (this.specularMethod.value == 0) {
 			// Lambert
@@ -260,14 +273,14 @@ export default class Shader {
 		return str + '}\n\n';
 	}
 
-	fragmentFunctions() {
+	fragmentFunctions(version) {
 		var str = '';
-		str += this.diffuseEnabled() ? this.diffuseFunction() : '';
-		str += this.specularEnabled() ? this.specularFunction() : '';
+		str += this.diffuseEnabled() ? this.diffuseFunction(version) : '';
+		str += this.specularEnabled() ? this.specularFunction(version) : '';
 		return str;
 	}
 
-	fragmentUniforms() {
+	fragmentUniforms(version) {
 		var str = 'uniform Material material;\n';
 		if (this.shadingEnabled()) {
 			str += this.specularEnabled() ? 'uniform Camera camera;\n' : '';
@@ -277,17 +290,30 @@ export default class Shader {
 		return str;
 	}
 
-	fragmentInput() {
+	fragmentInput(precision, type, name, version) {
+		var str = version.version > 2.0 ? 'in ' : 'varying ';
+		str += version.platform === 'embeded' ? precision+' ' : '';
+		return str + type + ' ' + name + ';\n';
+	}
+
+	fragmentInputs(version) {
 		var str = '';
 		if (this.shadingEnabled()) {
-			str += 'varying vec3 v_position;\n';
-			str += 'varying vec3 v_normal;\n';
+			str += this.fragmentInput('mediump', 'vec3', 'v_position', version);
+			str += this.fragmentInput('mediump', 'vec3', 'v_normal', version);
 			str += '\n';
 		}
 		return str;
 	}
 
-	fragmentMain() {
+	fragmentOutputs(version) {
+		var str = '';
+		if (version.version > 2.0)
+			str += 'out vec4 gl_FragColor;\n\n';
+		return str;
+	}
+
+	fragmentMain(version) {
 		var str = 'void main() {\n';
 
 		// Normalize the surface normal.
