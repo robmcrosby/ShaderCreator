@@ -58,6 +58,7 @@ export default class Shader {
 
 		return count;
 	}
+
 	numberOfTextures() {
 		var count = 0;
 
@@ -69,8 +70,12 @@ export default class Shader {
 
 		return count;
 	}
+
 	numberOfUVs() {
 		// TODO: Update this to handle more than one UV.
 		return this.numberOfTextures() > 0 ? 1 : 0;
 	}
+
+	diffuseFunction() {return this.diffuseMethod.options[this.diffuseMethod.value];}
+	specularFunction() {return this.specularMethod.options[this.specularMethod.value];}
 }

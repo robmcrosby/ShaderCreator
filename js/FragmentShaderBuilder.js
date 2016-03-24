@@ -66,36 +66,32 @@ function buildFunctions(properties, version) {
  *
  */
 function buildDiffuseFunction(properties, version) {
-  var src = 'vec4 diffuse(vec3 position, vec3 normal, vec2 params, mat4 light) {\n';
-  if (properties.diffuseMethod.value == 0) {
-    // Lambert
+  var src = 'float diffuse(vec3 position, vec3 normal, vec2 params, mat4 light) {\n';
+
+  const func = properties.diffuseFunction();
+  if (func === 'Lambert') {
     src += '  // Lambert\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.diffuseMethod.value == 1) {
-    // Oren-Nayar
+  else if (func === 'Oren-Nayar') {
     src += '  // Oren-Nayar\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.diffuseMethod.value == 2) {
-    // Toon
+  else if (func === 'Toon') {
     src += '  // Toon\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.diffuseMethod.value == 3) {
-    // Minnaert
+  else if (func === 'Minnaert') {
     src += '  // Minnaert\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.diffuseMethod.value == 4) {
-    // Fresnel
+  else if (func === 'Fresnel') {
     src += '  // Fresnel\n';
     src += '  return 0.0;\n';
   }
   else {
-    // Shadeless
     src += '  // Shadeless\n';
-    src += '  return 0.0;\n';
+    src += '  return 1.0;\n';
   }
   return src + '}\n\n';
 }
@@ -104,36 +100,32 @@ function buildDiffuseFunction(properties, version) {
  *
  */
 function buildSpecularFunction(properties, version) {
-  var src = 'vec4 specular(vec3 position, vec3 normal, vec3 camera, vec4 params, mat4 light) {\n';
-  if (properties.specularMethod.value == 0) {
-    // Lambert
+  var src = 'float specular(vec3 position, vec3 normal, vec3 camera, vec4 params, mat4 light) {\n';
+
+  const func = properties.specularFunction();
+  if (func === 'CookTorr') {
     src += '  // CookTorr\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.specularMethod.value == 1) {
-    // Phong
+  else if (func === 'Phong') {
     src += '  // Phong\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.specularMethod.value == 2) {
-    // Blinn
+  else if (func === 'Blinn') {
     src += '  // Blinn\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.specularMethod.value == 3) {
-    // Toon
+  else if (func === 'Toon') {
     src += '  // Toon\n';
     src += '  return 0.0;\n';
   }
-  else if (properties.specularMethod.value == 4) {
-    // Wardlso
+  else if (func === 'Wardlso') {
     src += '  // Wardlso\n';
     src += '  return 0.0;\n';
   }
   else {
-    // Shadeless
     src += '  // Shadeless\n';
-    src += '  return 0.0;\n';
+    src += '  return 1.0;\n';
   }
   return src + '}\n\n';
 }
