@@ -1,4 +1,5 @@
 import React from "react";
+import {bindAll} from "class-bind";
 
 import Selection from "../components/Selection";
 import CheckBox from "../components/CheckBox";
@@ -13,13 +14,15 @@ export default class InputProperties extends React.Component {
 	}
 
 	render() {
-		const {ambiantColorInput, diffuseColorInput} = this.props.shader;
+		const {ambiantInput, diffuseInput} = this.props.shader;
 
 		return (
 			<div class="well">
-			<Selection id="ambiantColorInput" label={ambiantColorInput.label} options={ambiantColorInput.options} value={ambiantColorInput.value} onChange={this.updateShader.bind(this)}/>
-				<Selection id="diffuseColorInput" label={diffuseColorInput.label} options={diffuseColorInput.options} value={diffuseColorInput.value} onChange={this.updateShader.bind(this)}/>
+				<Selection id="ambiantInput" label={ambiantInput.label} options={ambiantInput.options} value={ambiantInput.value} onChange={this.updateShader}/>
+				<Selection id="diffuseInput" label={diffuseInput.label} options={diffuseInput.options} value={diffuseInput.value} onChange={this.updateShader}/>
 			</div>
 		);
 	}
 }
+
+bindAll(InputProperties.prototype);

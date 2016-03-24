@@ -1,4 +1,5 @@
 import React from "react";
+import {bindAll} from "class-bind";
 
 export default class CheckBox extends React.Component {
 	constructor(props) {
@@ -17,10 +18,12 @@ export default class CheckBox extends React.Component {
 				<label class="col-xs-4 form-control-label">{label}</label>
 				<div class="col-xs-8">
 					<div class="checkbox">
-						<label><input type="checkbox" checked={value} onChange={this.onChange.bind(this)}/> {option}</label>
+						<label><input type="checkbox" checked={value} onChange={this.onChange}/> {option}</label>
 					</div>
 				</div>
 			</div>
 		);
 	}
 }
+
+bindAll(CheckBox.prototype);
