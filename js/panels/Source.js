@@ -2,6 +2,8 @@ import React from "react";
 import {bindAll} from "class-bind";
 
 import Selection from "./components/Selection";
+import buildVertexShader from "../VertexShaderBuilder";
+import buildFragmentShader from "../FragmentShaderBuilder";
 
 export default class Source extends React.Component {
 	constructor(props) {
@@ -36,9 +38,9 @@ export default class Source extends React.Component {
 
 		var source = '';
 		if (view === 'vert')
-			source = this.props.shader.createVertexSource(versions[this.state.version]);
+			source = buildVertexShader(this.props.shader, versions[this.state.version]); //this.props.shader.createVertexSource(versions[this.state.version]);
 		else if (view === 'frag')
-			source = this.props.shader.createFragmentSource(versions[this.state.version]);
+			source = buildFragmentShader(this.props.shader, versions[this.state.version]); //this.props.shader.createFragmentSource(versions[this.state.version]);
 
 		return (
 			<div class="col-md-6">
