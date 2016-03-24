@@ -3,12 +3,12 @@ import ReactDOM from "react-dom";
 import {bindAll} from "class-bind";
 
 import Layout from "./Layout";
-import Shader from "./Shader";
+import ShaderProperties from "./ShaderProperties";
 
 class ClientState extends React.Component {
 	constructor() {
 		super();
-		this.state = {shader: new Shader()};
+		this.state = {shader: new ShaderProperties()};
 	}
 
 	updateShader(id, value) {

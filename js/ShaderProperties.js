@@ -1,5 +1,5 @@
 
-export default class Shader {
+export default class ShaderProperties {
 	constructor() {
 		this.ambiantInput = {
 			label: 'Ambiant Color',

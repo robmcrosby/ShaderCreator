@@ -1,4 +1,4 @@
-import Shader from "./Shader";
+import ShaderProperties from "./ShaderProperties";
 
 export default function buildFragmentShader(properties, version) {
   var src = '';
