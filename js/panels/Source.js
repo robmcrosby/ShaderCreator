@@ -2,7 +2,7 @@ import React from "react";
 import {bindAll} from "class-bind";
 
 import Selection from "./components/Selection";
-import ShaderVersion from "../ShaderVersion";
+import ShaderVersion from "../models/ShaderVersion";
 import buildVertexShader from "../VertexShaderBuilder";
 import buildFragmentShader from "../FragmentShaderBuilder";
 

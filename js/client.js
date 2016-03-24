@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import {bindAll} from "class-bind";
 
 import Layout from "./Layout";
-import ShaderProperties from "./ShaderProperties";
+import ShaderProperties from "./models/ShaderProperties";
 
 class ClientState extends React.Component {
 	constructor() {

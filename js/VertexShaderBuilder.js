@@ -1,4 +1,5 @@
-import ShaderProperties from "./ShaderProperties";
+import ShaderProperties from "./models/ShaderProperties";
+import ShaderVersion from "./models/ShaderVersion";
 
 /**
  *
