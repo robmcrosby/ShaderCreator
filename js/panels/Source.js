@@ -2,6 +2,7 @@ import React from "react";
 import {bindAll} from "class-bind";
 
 import Selection from "./components/Selection";
+import ShaderVersion from "../ShaderVersion";
 import buildVertexShader from "../VertexShaderBuilder";
 import buildFragmentShader from "../FragmentShaderBuilder";
 
@@ -30,7 +31,7 @@ export default class Source extends React.Component {
 
 	render() {
 		var view = this.state.view;
-		var versions = this.props.shader.supportedVersions;
+		var versions = ShaderVersion.supportedVersions();
 
 		var versionOptions = [];
 		for (var i = 0; i < versions.length; ++i)

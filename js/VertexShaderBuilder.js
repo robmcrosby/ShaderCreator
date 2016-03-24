@@ -98,7 +98,7 @@ function buildInputs(properties, version) {
  *
  */
 function buildInput(type, name, version) {
-  var src = version.version > 2.0 ? 'in' : 'attribute';
+  var src = version.number > 2.0 ? 'in' : 'attribute';
   return src + ' ' + type + ' ' + name + ';\n';
 }
 
@@ -142,7 +142,7 @@ function buildOutputs(properties, version) {
  *
  */
 function buildOutput(type, name, version) {
-  var src = version.version > 2.0 ? 'out ' : 'varying ';
+  var src = version.number > 2.0 ? 'out ' : 'varying ';
   return src + type + ' ' + name + ';\n';
 }
 

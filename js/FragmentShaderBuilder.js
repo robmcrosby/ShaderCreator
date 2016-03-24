@@ -184,7 +184,7 @@ function buildInputs(properties, version) {
  *
  */
  function buildInput(precision, type, name, version) {
-   var src = version.version > 2.0 ? 'in ' : 'varying ';
+   var src = version.number > 2.0 ? 'in ' : 'varying ';
    src += version.platform === 'embeded' ? precision+' ' : '';
    return src + type + ' ' + name + ';\n';
  }
@@ -193,7 +193,7 @@ function buildInputs(properties, version) {
  *
  */
 function buildOutputs(properties, version) {
-  if (version.version > 2.0)
+  if (version.number > 2.0)
     return 'out vec4 gl_FragColor;\n\n';
   return '';
 }
@@ -214,7 +214,7 @@ function buildMain(properties, version) {
   if (properties.ambiantInput.value > 0 && properties.ambiantInput.value <= 2)
     src += ' * v_color' + (properties.ambiantInput.value-1) + ';\n';
   else if (properties.ambiantInput.value > 2) {
-    src += version.version > 2.0 ? ' * texture' : ' * texture2D';
+    src += version.number > 2.0 ? ' * texture' : ' * texture2D';
     src += '(texture' + (properties.ambiantInput.value-3) + ', v_uv0);\n';
   }
   else

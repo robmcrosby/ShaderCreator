@@ -31,11 +31,6 @@ export default class ShaderProperties {
 			value: 0,
 			options: ['CookTorr', 'Phong', 'Blinn', 'Toon', 'Wardlso'],
 		}
-		this.supportedVersions = [
-			{label: 'OpenGL ES 2.0', header: '#version 100',    platform:'embeded', version: 2.0},
-			{label: 'OpenGL ES 3.0', header: '#version 300 es', platform:'embeded', version: 3.0},
-			{label: 'OpenGL 4.1',    header: '#version 410',    platform:'desktop', version: 4.1},
-		];
 	}
 
 	diffuseEnabled() {return this.diffuseEnable.value;}
