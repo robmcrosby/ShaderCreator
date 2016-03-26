@@ -164,31 +164,22 @@ function buildTextures(properties, version) {
 function buildInputs(properties, version) {
   var src = '';
   if (properties.shadingEnabled()) {
-    src += buildInput('mediump', 'vec3', 'v_position', version);
-    src += buildInput('mediump', 'vec3', 'v_normal', version);
+    src += version.fragmentInput('mediump', 'vec3', 'v_position');
+    src += version.fragmentInput('mediump', 'vec3', 'v_normal');
   }
 
   // Add any vertex colors
   var numColors = properties.numberOfVertexColors();
   for (var i = 0; i < numColors; ++i)
-    src += buildInput('mediump', 'vec4', 'v_color'+i, version);
+    src += version.fragmentInput('mediump', 'vec4', 'v_color'+i);
 
   // Add any texture coordinates
   var numUVs = properties.numberOfUVs();
   for (var i = 0; i < numUVs; ++i)
-    src += buildInput('mediump', 'vec2', 'v_uv'+i, version);
+    src += version.fragmentInput('mediump', 'vec2', 'v_uv'+i);
 
   return src.length > 0 ? src + '\n' : '';
 }
-
-/**
- *
- */
- function buildInput(precision, type, name, version) {
-   var src = version.number > 2.0 ? 'in ' : 'varying ';
-   src += version.platform === 'embeded' ? precision+' ' : '';
-   return src + type + ' ' + name + ';\n';
- }
 
 /**
  *
@@ -207,7 +198,18 @@ function buildMain(properties, version) {
 
   // Normalize the surface normal.
   src += properties.shadingEnabled()  ? '  vec3 normal = normalize(v_normal);\n' : '';
-  src += properties.diffuseEnabled()  ? '  vec4 diffuseColor = material.diffuseColor;\n' : '';
+
+  if (properties.diffuseEnabled()) {
+    src += '  vec4 diffuseColor = material.diffuseColor';
+    if (properties.diffuseInput.value > 0 && properties.diffuseInput.value <= 2)
+      src += ' * v_color' + (properties.diffuseInput.value-1) + ';\n';
+    else if (properties.diffuseInput.value > 2) {
+      src += version.textureFunction();
+      src += '(texture' + (properties.diffuseInput.value-3) + ', v_uv0);\n';
+    }
+    else
+      src += ';\n';
+  }
   src += properties.specularEnabled() ? '  vec4 specularColor = material.specularColor;\n' : '';
 
   // Initalize the output color to the ambiant component.
@@ -215,7 +217,7 @@ function buildMain(properties, version) {
   if (properties.ambiantInput.value > 0 && properties.ambiantInput.value <= 2)
     src += ' * v_color' + (properties.ambiantInput.value-1) + ';\n';
   else if (properties.ambiantInput.value > 2) {
-    src += version.number > 2.0 ? ' * texture' : ' * texture2D';
+    src += version.textureFunction();
     src += '(texture' + (properties.ambiantInput.value-3) + ', v_uv0);\n';
   }
   else

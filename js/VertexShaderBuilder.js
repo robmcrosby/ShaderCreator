@@ -76,31 +76,23 @@ function buildFunctions(properties, version) {
  */
 function buildInputs(properties, version) {
   // Always add position
-  var src = buildInput('vec4', 'position', version);
+  var src = version.vertexInput('vec4', 'position');
 
   // Add normal if there will be shading
   if (properties.shadingEnabled())
-    src += buildInput('vec4', 'normal', version);
+    src += version.vertexInput('vec4', 'normal');
 
   // Add any vertex colors
   var numColors = properties.numberOfVertexColors();
   for (var i = 0; i < numColors; ++i)
-    src += buildInput('vec4', 'color'+i, version);
+    src += version.vertexInput('vec4', 'color'+i);
 
   // Add any texture coordinates
   var numUVs = properties.numberOfUVs();
   for (var i = 0; i < numUVs; ++i)
-    src += buildInput('vec2', 'uv'+i, version);
+    src += version.vertexInput('vec2', 'uv'+i);
 
   return src + '\n';
-}
-
-/**
- *
- */
-function buildInput(type, name, version) {
-  var src = version.number > 2.0 ? 'in' : 'attribute';
-  return src + ' ' + type + ' ' + name + ';\n';
 }
 
 /**
@@ -121,30 +113,22 @@ function buildOutputs(properties, version) {
 
   // Pass position and normal if there is shading
   if (properties.shadingEnabled()) {
-    src += buildOutput('vec3', 'v_position', version);
-    src += buildOutput('vec3', 'v_normal', version);
+    src += version.vertexOutput('vec3', 'v_position');
+    src += version.vertexOutput('vec3', 'v_normal');
   }
 
   // Pass any vertex colors
   var numColors = properties.numberOfVertexColors();
   for (var i = 0; i < numColors; ++i)
-    src += buildOutput('vec4', 'v_color'+i, version);
+    src += version.vertexOutput('vec4', 'v_color'+i);
 
   // Pass any texture coordinates
   var numUVs = properties.numberOfUVs();
   for (var i = 0; i < numUVs; ++i)
-    src += buildOutput('vec2', 'v_uv'+i, version);
+    src += version.vertexOutput('vec2', 'v_uv'+i);
 
   // Add an extra newline if there was anything built.
   return src.length > 0 ? src + '\n' : '';
-}
-
-/**
- *
- */
-function buildOutput(type, name, version) {
-  var src = version.number > 2.0 ? 'out ' : 'varying ';
-  return src + type + ' ' + name + ';\n';
 }
 
 /**
