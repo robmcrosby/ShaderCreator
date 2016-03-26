@@ -37,8 +37,27 @@ export default class ShaderProperties {
 	specularEnabled() {return this.specularEnable.value;}
 	shadingEnabled() {return this.diffuseEnabled() || this.specularEnabled();}
 
-	ambiantInputType() {return this.ambiantInput.options[this.ambiantInput.value];}
-	diffuseInputType() {return this.diffuseInput.options[this.diffuseInput.value];}
+	inputType(value) {
+		if (value > 0 && value <= 2)
+			return 'Vertex';
+		if (value > 2)
+			return 'Texture';
+		return 'Material';
+	}
+
+	inputIndex(value) {
+		if (value > 0 && value <= 2)
+			return value-1;
+		if (value > 2)
+			return value-3;
+		return 0;
+	}
+
+	ambiantInputType() {return this.inputType(this.ambiantInput.value);}
+	ambiantInputIndex() {return this.inputIndex(this.ambiantInput.value);}
+
+	diffuseInputType() {return this.inputType(this.diffuseInput.value);}
+	diffuseInputIndex() {return this.inputIndex(this.diffuseInput.value);}
 
 	numberOfVertexColors() {
 		var count = 0;

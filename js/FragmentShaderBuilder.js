@@ -199,29 +199,12 @@ function buildMain(properties, version) {
   // Normalize the surface normal.
   src += properties.shadingEnabled()  ? '  vec3 normal = normalize(v_normal);\n' : '';
 
-  if (properties.diffuseEnabled()) {
-    src += '  vec4 diffuseColor = material.diffuseColor';
-    if (properties.diffuseInput.value > 0 && properties.diffuseInput.value <= 2)
-      src += ' * v_color' + (properties.diffuseInput.value-1) + ';\n';
-    else if (properties.diffuseInput.value > 2) {
-      src += version.textureFunction();
-      src += '(texture' + (properties.diffuseInput.value-3) + ', v_uv0);\n';
-    }
-    else
-      src += ';\n';
-  }
+  if (properties.diffuseEnabled())
+    src += '  vec4 diffuseColor = ' + buildDiffuseColor(properties, version);
   src += properties.specularEnabled() ? '  vec4 specularColor = material.specularColor;\n' : '';
 
   // Initalize the output color to the ambiant component.
-  src += '  gl_FragColor = material.ambiantColor'
-  if (properties.ambiantInput.value > 0 && properties.ambiantInput.value <= 2)
-    src += ' * v_color' + (properties.ambiantInput.value-1) + ';\n';
-  else if (properties.ambiantInput.value > 2) {
-    src += version.textureFunction();
-    src += '(texture' + (properties.ambiantInput.value-3) + ', v_uv0);\n';
-  }
-  else
-    src += ';\n';
+  src += '  gl_FragColor = ' + buildAmbiantColor(properties, version);
 
   if (properties.shadingEnabled()) {
     // Calculate and add the diffuse and specular colors for each light.
@@ -242,4 +225,32 @@ function buildMain(properties, version) {
   src += '  gl_FragColor.w = 1.0;\n';
   src += '}\n';
   return src;
+}
+
+/**
+ *
+ */
+function buildAmbiantColor(properties, version) {
+  const type = properties.ambiantInputType();
+  var src = 'material.ambiantColor';
+
+  if (type === 'Vertex')
+    src += ' * v_color' + properties.ambiantInputIndex();
+  else if (type === 'Texture')
+    src += version.textureFunction() +'(texture' + properties.ambiantInputIndex() + ', v_uv0)';
+  return src + ';\n';
+}
+
+/**
+ *
+ */
+function buildDiffuseColor(properties, version) {
+  const type = properties.diffuseInputType();
+  var src = 'material.diffuseColor';
+
+  if (type === 'Vertex')
+    src += ' * v_color' + properties.diffuseInputIndex();
+  else if (type === 'Texture')
+    src += version.textureFunction() + '(texture' + properties.diffuseInputIndex() + ', v_uv0)';
+  return src + ';\n';
 }
