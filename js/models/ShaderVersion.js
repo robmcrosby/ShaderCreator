@@ -31,5 +31,5 @@ export default class ShaderVersion {
     return src + type + ' ' + name + ';\n';
   }
 
-  textureFunction() {return this.number > 2.0 ? ' * texture' : ' * texture2D';}
+  textureFunction() {return this.number > 2.0 ? 'texture' : 'texture2D';}
 }

@@ -237,7 +237,7 @@ function buildAmbiantColor(properties, version) {
   if (type === 'Vertex')
     src += ' * v_color' + properties.ambiantInputIndex();
   else if (type === 'Texture')
-    src += version.textureFunction() +'(texture' + properties.ambiantInputIndex() + ', v_uv0)';
+    src += ' * ' + version.textureFunction() +'(texture' + properties.ambiantInputIndex() + ', v_uv0)';
   return src + ';\n';
 }
 
@@ -251,6 +251,6 @@ function buildDiffuseColor(properties, version) {
   if (type === 'Vertex')
     src += ' * v_color' + properties.diffuseInputIndex();
   else if (type === 'Texture')
-    src += version.textureFunction() + '(texture' + properties.diffuseInputIndex() + ', v_uv0)';
+    src += ' * ' + version.textureFunction() + '(texture' + properties.diffuseInputIndex() + ', v_uv0)';
   return src + ';\n';
 }
