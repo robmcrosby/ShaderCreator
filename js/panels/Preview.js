@@ -1,4 +1,5 @@
 import React from "react";
+import GLCanvas from "./viewport/GLCanvas";
 
 export default class Preview extends React.Component {
   constructor(props) {
@@ -6,11 +7,6 @@ export default class Preview extends React.Component {
 	}
 
   render() {
-    var canvasStyles = {
-      width: '100%',
-      height: 'auto'
-    };
-
     return(
       <div class="col-md-6">
       <div class="panel panel-default">
@@ -18,10 +14,7 @@ export default class Preview extends React.Component {
           <h4>Shader Preview</h4>
         </div>
         <div class="panel-body">
-        <canvas id="glcanvas" width="300" height="300" style={canvasStyles}>
-          Your browser does not appear to support the
-          <code>&lt;canvas&gt;</code> element.
-        </canvas>
+        <GLCanvas />
         </div>
       </div>
       </div>
