@@ -20,7 +20,7 @@ export default class Layout extends React.Component {
 				<h1>Shader Creator</h1>
 				<div class="row">
 					<Properties shader={this.props.shader} updateShader={this.updateShader} />
-					<Preview />
+					<Preview shader={this.props.shader} />
 					<Source shader={this.props.shader} />
 				</div>
 			</div>

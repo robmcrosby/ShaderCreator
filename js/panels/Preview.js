@@ -11,10 +11,10 @@ export default class Preview extends React.Component {
       <div class="col-md-6">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h4>Shader Preview</h4>
+          <h4>Preview</h4>
         </div>
         <div class="panel-body">
-        <GLCanvas />
+        <GLCanvas shader={this.props.shader} />
         </div>
       </div>
       </div>

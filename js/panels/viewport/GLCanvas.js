@@ -7,16 +7,16 @@ export default class Preview extends React.Component {
     this.glContext = null;
     this.shaderProgram = null;
     this.positionBuffer = null;
+    this.timestamp = 0.0;
 	}
 
   render() {
-    var inlineStyles = {
+    var styles = {
       width: '100%',
-      height: 'auto'
     };
 
     return(
-      <canvas ref={(c) => this.canvas = c} width="300" height="300" style={inlineStyles}>
+      <canvas ref={(c) => this.canvas = c} style={styles}>
         Your browser does not appear to support the
         <code>&lt;canvas&gt;</code> element.
       </canvas>
@@ -24,10 +24,45 @@ export default class Preview extends React.Component {
   }
 
   componentDidMount() {
+    console.log('componentDidMount');
+
     if (this.canvas !== null && this.initWebGL()) {
+      console.log('Init WebGL Canvas');
+
       this.buildProgram();
       this.uploadBuffers();
+
       this.drawFrame();
+
+      //this.startAnimating();
+    }
+  }
+
+  componentWillUnmount() {
+    console.log('componentWillUnmount');
+    this.stopAnimating();
+  }
+
+  componentDidUpdate() {
+    console.log('componentDidUpdate');
+
+    // TODO update the shader and re-draw if not animated
+    //this.drawFrame();
+  }
+
+  startAnimating() {
+    const render = (timestamp) => {
+      this.timestamp = timestamp;
+      this.renderID = window.requestAnimationFrame(render);
+      this.drawFrame();
+    }
+    this.renderID = window.requestAnimationFrame(render);
+  }
+
+  stopAnimating() {
+    if (typeof this.renderID !== 'undefined') {
+      window.cancelAnimationFrame(this.renderID);
+      this.renderID = undefined;
     }
   }
 
@@ -68,6 +103,7 @@ export default class Preview extends React.Component {
     var gl = this.glContext;
 
     if (gl) {
+      // TODO add shader building functions here.
       var fragmentShader = this.compileShader("void main() {gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);}", gl.FRAGMENT_SHADER);
       var vertexShader = this.compileShader("attribute vec4 position; void main() {gl_Position = position;}", gl.VERTEX_SHADER);
 
@@ -102,8 +138,14 @@ export default class Preview extends React.Component {
     var canvas = this.canvas;
     var gl = this.glContext;
 
+    console.log('Draw Frame: ' + this.timestamp);
+
     if (gl && canvas) {
-      console.log('size: ' + canvas.width + ', ' + canvas.height);
+      // Update the width and height of the canvas
+      if (this.canvas.width !== this.canvas.offsetWidth)
+        this.canvas.width = this.canvas.height = this.canvas.offsetWidth;
+
+      //canvas.height = canvas.width = canvas.offsetWidth;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.enable(gl.DEPTH_TEST);
 
