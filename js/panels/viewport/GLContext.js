@@ -32,7 +32,11 @@ export default class GLContext {
   loaded() {return this.canvas !== null && this.context !== null;}
 
   static createModel() {
-    return {shader: null, vertexBuffers: {}};
+    return {shader: null, vertexBuffers: {}, uniforms: {}};
+  }
+
+  setUniform(model, name, data, components) {
+    model.uniforms[name] = {data: data, components: components};
   }
 
 
@@ -124,18 +128,69 @@ export default class GLContext {
       var count = 0;
       for (name in model.vertexBuffers) {
         const buffer = model.vertexBuffers[name];
-        var index = gl.getAttribLocation(shader.shaderId, name);
-
-        // Get -1 if the input is not defined in the shader
-        if (buffer && index >= 0) {
-          gl.enableVertexAttribArray(index);
-          gl.bindBuffer(gl.ARRAY_BUFFER, buffer.bufferId);
-          gl.vertexAttribPointer(index, buffer.compoents, gl.FLOAT, gl.FALSE, 0, 0);
+        this.applyVertexBuffer(shader, name, buffer);
+        if (buffer)
           count = Math.max(count, buffer.size);
-        }
+      }
+
+      for (name in model.uniforms) {
+        const uniform = model.uniforms[name];
+        this.applyUniform(shader, name, uniform);
       }
 
       gl.drawArrays(gl.TRIANGLES, 0, count);
+    }
+  }
+
+  applyVertexBuffer(shader, name, buffer) {
+    var gl = this.context;
+    if (gl && shader && buffer) {
+      var index = gl.getAttribLocation(shader.shaderId, name);
+
+      // Get -1 if the input is not defined in the shader
+      if (buffer && index >= 0) {
+        gl.enableVertexAttribArray(index);
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer.bufferId);
+        gl.vertexAttribPointer(index, buffer.compoents, gl.FLOAT, gl.FALSE, 0, 0);
+      }
+    }
+  }
+
+  applyUniform(shader, name, uniform) {
+    if (uniform) {
+      if (Array.isArray(uniform.data))
+        this.uploadUniform(shader, name, uniform.data, uniform.components);
+    }
+  }
+
+  uploadUniform(shader, name, data, components) {
+    var gl = this.context;
+    if (gl) {
+      var loc = gl.getUniformLocation(shader.shaderId, name);
+
+      // loc is null if it is not in the shader.
+      if (loc) {
+        switch (components) {
+          case 1:
+            gl.uniform1fv(loc, new Float32Array(data), data.length/components);
+            break;
+          case 2:
+            gl.uniform2fv(loc, new Float32Array(data), data.length/components);
+            break;
+          case 3:
+            gl.uniform3fv(loc, new Float32Array(data), data.length/components);
+            break;
+          case 4:
+            gl.uniform4fv(loc, new Float32Array(data), data.length/components);
+            break;
+          case 9:
+            gl.uniformMatrix3fv(loc, false, new Float32Array(data));
+            break;
+          case 16:
+            gl.uniformMatrix4fv(loc, false, new Float32Array(data));
+            break;
+        }
+      }
     }
   }
 }

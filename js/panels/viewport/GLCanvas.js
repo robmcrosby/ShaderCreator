@@ -52,8 +52,8 @@ export default class GLCanvas extends React.Component {
   setModelShader() {
     this.glContext.setShader(
       this.model,
-      "attribute vec4 position; void main() {gl_Position = position;}",
-      "void main() {gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);}"
+      "attribute vec4 position; uniform mat4 transform; void main() {gl_Position = transform * position;}",
+      "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
     );
   }
 
@@ -63,8 +63,19 @@ export default class GLCanvas extends React.Component {
       -0.8, -0.8,  0.0, 1.0,
        0.8, -0.8,  0.0, 1.0
      ];
+     var color = [
+       0.2, 0.2, 1.0, 1.0
+     ];
+     var transform = [
+       1.0, 0.0, 0.0, 0.0,
+       0.0, 1.0, 0.0, 0.0,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0
+     ];
 
     this.glContext.setVertexBuffer(this.model, 'position', positions, 4);
+    this.glContext.setUniform(this.model, 'color', color, 4);
+    this.glContext.setUniform(this.model, 'transform', transform, 16);
   }
 
   startAnimating() {
