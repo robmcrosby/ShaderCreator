@@ -32,7 +32,7 @@ export default class GLContext {
   loaded() {return this.canvas !== null && this.context !== null;}
 
   static createModel() {
-    return {shader: null, vertexBuffers: {}, uniforms: {}};
+    return {shader: null, vertexBuffers: {}, uniforms: {}, textures: []};
   }
 
   setUniform(model, name, data, components) {
@@ -106,6 +106,33 @@ export default class GLContext {
   }
 
 
+  addTexture(model, file) {
+    var gl = this.context;
+    if (gl) {
+      // Create the texture and add to the model
+      var texture = gl.createTexture();
+      model.textures.push(texture);
+
+      // Create an image that loads the texture
+      var image = new Image();
+      image.onload = () => this.handleTextureLoaded(image, texture);
+      image.src = file;
+    }
+  }
+
+  handleTextureLoaded(image, texture) {
+    var gl = this.context;
+    if (gl) {
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+  }
+
+
   clear(color) {
     var canvas = this.canvas;
     var gl = this.context;
@@ -138,6 +165,8 @@ export default class GLContext {
         this.applyUniform(shader, name, uniform);
       }
 
+      this.applyTextures(shader, model.textures);
+
       gl.drawArrays(gl.TRIANGLES, 0, count);
     }
   }
@@ -152,6 +181,17 @@ export default class GLContext {
         gl.enableVertexAttribArray(index);
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer.bufferId);
         gl.vertexAttribPointer(index, buffer.compoents, gl.FLOAT, gl.FALSE, 0, 0);
+      }
+    }
+  }
+
+  applyTextures(shader, textures) {
+    var gl = this.context;
+    if (gl) {
+      for (var i = 0; i < textures.length; ++i) {
+        gl.activeTexture(gl.TEXTURE0+i);
+        gl.bindTexture(gl.TEXTURE_2D, textures[i]);
+        gl.uniform1i(gl.getUniformLocation(shader.shaderId, ("texture"+i)), i);
       }
     }
   }

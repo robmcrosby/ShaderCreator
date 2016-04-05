@@ -46,22 +46,35 @@ export default class GLCanvas extends React.Component {
     console.log('componentDidUpdate');
 
     // TODO update the shader and re-draw if not animated
-    //this.drawFrame();
+    this.drawFrame();
   }
 
   setModelShader() {
     this.glContext.setShader(
       this.model,
-      "attribute vec4 position; uniform mat4 transform; void main() {gl_Position = transform * position;}",
-      "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
+      "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
+      "varying mediump vec2 uv; uniform sampler2D texture0; void main() {gl_FragColor = texture2D(texture0, uv);}"
     );
   }
 
   setModelBuffers() {
     var positions = [
-       0.0,  0.8,  0.0, 1.0,
       -0.8, -0.8,  0.0, 1.0,
-       0.8, -0.8,  0.0, 1.0
+       0.8,  0.8,  0.0, 1.0,
+      -0.8,  0.8,  0.0, 1.0,
+
+      -0.8, -0.8,  0.0, 1.0,
+       0.8, -0.8,  0.0, 1.0,
+       0.8,  0.8,  0.0, 1.0
+     ];
+     var uvs = [
+       0.0, 0.0,
+       1.0, 1.0,
+       0.0, 1.0,
+
+       0.0, 0.0,
+       1.0, 0.0,
+       1.0, 1.0
      ];
      var color = [
        0.2, 0.2, 1.0, 1.0
@@ -74,8 +87,10 @@ export default class GLCanvas extends React.Component {
      ];
 
     this.glContext.setVertexBuffer(this.model, 'position', positions, 4);
+    this.glContext.setVertexBuffer(this.model, 'uv_0', uvs, 2);
     this.glContext.setUniform(this.model, 'color', color, 4);
     this.glContext.setUniform(this.model, 'transform', transform, 16);
+    this.glContext.addTexture(this.model, 'images/grid.png');
   }
 
   startAnimating() {
