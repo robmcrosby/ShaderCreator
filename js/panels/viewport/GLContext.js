@@ -3,6 +3,7 @@ export default class GLContext {
   constructor() {
     this.canvas = null;
     this.context = null;
+    this.textures = {};
   }
 
   load(canvas) {
@@ -56,7 +57,7 @@ export default class GLContext {
       gl.linkProgram(shader);
 
       if (gl.getProgramParameter(shader, gl.LINK_STATUS))
-        return {shaderId: shader};
+        return shader;
     }
     console.error("Could not initialise shader");
     return null;
@@ -105,19 +106,23 @@ export default class GLContext {
 
   }
 
-
-  addTexture(model, file) {
+  addTexture(name, file) {
     var gl = this.context;
     if (gl) {
       // Create the texture and add to the model
       var texture = gl.createTexture();
-      model.textures.push(texture);
+      this.textures[name] = texture;
 
       // Create an image that loads the texture
       var image = new Image();
       image.onload = () => this.handleTextureLoaded(image, texture);
       image.src = file;
     }
+  }
+
+  setTexture(model, name) {
+    if (name in this.textures)
+      model.textures.push(this.textures[name]);
   }
 
   handleTextureLoaded(image, texture) {
@@ -148,41 +153,42 @@ export default class GLContext {
 
   draw(model) {
     var gl = this.context;
-    if (gl && model && model.shader) {
-      const shader = model.shader;
-      gl.useProgram(shader.shaderId);
+    if (gl && model) {
+      gl.useProgram(model.shader);
 
-      var count = 0;
-      for (name in model.vertexBuffers) {
-        const buffer = model.vertexBuffers[name];
-        this.applyVertexBuffer(shader, name, buffer);
-        if (buffer)
-          count = Math.max(count, buffer.size);
-      }
+      // Apply the vertex buffers to the shader and get the number of vertices to draw.
+      var vertexCount = this.applyVertexBuffers(model.shader, model.vertexBuffers);
 
-      for (name in model.uniforms) {
-        const uniform = model.uniforms[name];
-        this.applyUniform(shader, name, uniform);
-      }
+      // Apply the uniforms and texturest to the shader.
+      this.applyUniforms(model.shader, model.uniforms);
+      this.applyTextures(model.shader, model.textures);
 
-      this.applyTextures(shader, model.textures);
-
-      gl.drawArrays(gl.TRIANGLES, 0, count);
+      // Draw the mesh.
+      gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
     }
+  }
+
+  applyVertexBuffers(shader, buffers) {
+    var count = 0;
+    for (name in buffers)
+      count = Math.max(count, this.applyVertexBuffer(shader, name, buffers[name]));
+    return count;
   }
 
   applyVertexBuffer(shader, name, buffer) {
     var gl = this.context;
     if (gl && shader && buffer) {
-      var index = gl.getAttribLocation(shader.shaderId, name);
+      var index = gl.getAttribLocation(shader, name);
 
       // Get -1 if the input is not defined in the shader
       if (buffer && index >= 0) {
         gl.enableVertexAttribArray(index);
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer.bufferId);
         gl.vertexAttribPointer(index, buffer.compoents, gl.FLOAT, gl.FALSE, 0, 0);
+        return buffer.size;
       }
     }
+    return 0;
   }
 
   applyTextures(shader, textures) {
@@ -191,8 +197,19 @@ export default class GLContext {
       for (var i = 0; i < textures.length; ++i) {
         gl.activeTexture(gl.TEXTURE0+i);
         gl.bindTexture(gl.TEXTURE_2D, textures[i]);
-        gl.uniform1i(gl.getUniformLocation(shader.shaderId, ("texture"+i)), i);
+
+        // loc is null if the sampler is not present in the shader.
+        var loc = gl.getUniformLocation(shader, ("texture"+i));
+        if (loc)
+          gl.uniform1i(loc, i);
       }
+    }
+  }
+
+  applyUniforms(shader, uniforms) {
+    for (name in uniforms) {
+      const uniform = uniforms[name];
+      this.applyUniform(shader, name, uniform);
     }
   }
 
@@ -206,9 +223,8 @@ export default class GLContext {
   uploadUniform(shader, name, data, components) {
     var gl = this.context;
     if (gl) {
-      var loc = gl.getUniformLocation(shader.shaderId, name);
-
-      // loc is null if it is not in the shader.
+      // loc is null if it is present in the shader.
+      var loc = gl.getUniformLocation(shader, name);
       if (loc) {
         switch (components) {
           case 1:
