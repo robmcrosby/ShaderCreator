@@ -52,9 +52,15 @@ export default class GLCanvas extends React.Component {
   setModelShader() {
     this.glContext.setShader(
       this.model,
-      "attribute vec4 position; void main() {gl_Position = position;}",
-      "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
+      "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
+      "varying mediump vec2 uv; void main() {gl_FragColor = vec4(uv, 0.0, 1.0);}"
     );
+
+    // this.glContext.setShader(
+    //   this.model,
+    //   "attribute vec4 position; void main() {gl_Position = position;}",
+    //   "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
+    // );
     // this.glContext.setShader(
     //   this.model,
     //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
@@ -63,6 +69,9 @@ export default class GLCanvas extends React.Component {
   }
 
   setModelBuffers() {
+    var plane = require('json!./plane.json');
+    console.log(plane);
+
     var positions = [
       -0.8, -0.8,  0.0, 1.0,
        0.8,  0.8,  0.0, 1.0,
