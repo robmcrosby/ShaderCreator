@@ -6,7 +6,9 @@ export default class GLCanvas extends React.Component {
   constructor(props) {
 		super(props);
     this.glContext = new GLContext();
-    this.model = GLContext.createModel();
+    this.meshes = require('json!./Meshes.json');
+    this.models = [];
+    this.activeModel = 1;
     this.timestamp = 0.0;
 	}
 
@@ -29,8 +31,8 @@ export default class GLCanvas extends React.Component {
     if (this.canvas !== null && this.glContext.load(this.canvas)) {
       console.log('Init WebGL Canvas');
 
-      this.setModelShader();
       this.setModelBuffers();
+      this.setModelShader();
 
       this.drawFrame();
       //this.startAnimating();
@@ -50,63 +52,52 @@ export default class GLCanvas extends React.Component {
   }
 
   setModelShader() {
-    this.glContext.setShader(
-      this.model,
-      "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
-      "varying mediump vec2 uv; void main() {gl_FragColor = vec4(uv, 0.0, 1.0);}"
+    var shader = this.glContext.loadShader(
+      "attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; void main() {gl_Position = position; vcolor = color_0;}",
+      "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
     );
 
-    // this.glContext.setShader(
-    //   this.model,
+    // var shader = this.glContext.loadShader(
+    //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
+    //   "varying mediump vec2 uv; void main() {gl_FragColor = vec4(uv, 0.0, 1.0);}"
+    // );
+
+    // var shader = this.glContext.loadShader(
     //   "attribute vec4 position; void main() {gl_Position = position;}",
     //   "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
     // );
-    // this.glContext.setShader(
-    //   this.model,
+
+    // var shader = this.glContext.loadShader(
     //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
     //   "varying mediump vec2 uv; uniform sampler2D texture0; void main() {gl_FragColor = texture2D(texture0, uv);}"
     // );
+
+    // Assign the shader to all the models
+    for (var i = 0; i < this.models.length; ++i)
+      this.models[i].shader = shader;
   }
 
   setModelBuffers() {
-    var plane = require('json!./plane.json');
-    console.log(plane);
-
-    var positions = [
-      -0.8, -0.8,  0.0, 1.0,
-       0.8,  0.8,  0.0, 1.0,
-      -0.8,  0.8,  0.0, 1.0,
-
-      -0.8, -0.8,  0.0, 1.0,
-       0.8, -0.8,  0.0, 1.0,
-       0.8,  0.8,  0.0, 1.0
-     ];
-     var uvs = [
-       0.0, 0.0,
-       1.0, 1.0,
-       0.0, 1.0,
-
-       0.0, 0.0,
-       1.0, 0.0,
-       1.0, 1.0
-     ];
-     var color = [
-       0.2, 0.2, 1.0, 1.0
-     ];
-     var transform = [
-       1.0, 0.0, 0.0, 0.0,
-       0.0, 1.0, 0.0, 0.0,
-       0.0, 0.0, 1.0, 0.0,
-       0.0, 0.0, 0.0, 1.0
-     ];
-
-    this.glContext.setVertexBuffer(this.model, 'position', positions, 4);
-    this.glContext.setVertexBuffer(this.model, 'uv_0', uvs, 2);
-    this.glContext.setUniform(this.model, 'color', color, 4);
-    this.glContext.setUniform(this.model, 'transform', transform, 16);
-
     this.glContext.addTexture('grid', 'images/grid.png');
-    this.glContext.setTexture(this.model, 'grid');
+
+    for (var i = 0; i < this.meshes.length; ++i)
+      this.models.push(this.glContext.modelFromMesh(this.meshes[i]));
+
+    var color = [
+      0.2, 0.2, 1.0, 1.0
+    ];
+    var transform = [
+      1.0, 0.0, 0.0, 0.0,
+      0.0, 1.0, 0.0, 0.0,
+      0.0, 0.0, 1.0, 0.0,
+      0.0, 0.0, 0.0, 1.0
+    ];
+
+    for (var i = 0; i < this.models.length; ++i) {
+      this.glContext.setUniform(this.models[i], 'color', color, 4);
+      this.glContext.setUniform(this.models[i], 'transform', transform, 16);
+      this.glContext.setTexture(this.models[i], 'grid');
+    }
   }
 
   startAnimating() {
@@ -134,6 +125,6 @@ export default class GLCanvas extends React.Component {
       this.canvas.width = this.canvas.height = this.canvas.offsetWidth;
 
     this.glContext.clear();
-    this.glContext.draw(this.model);
+    this.glContext.draw(this.models[this.activeModel]);
   }
 }

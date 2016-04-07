@@ -36,6 +36,13 @@ export default class GLContext {
     return {shader: null, vertexBuffers: {}, uniforms: {}, textures: []};
   }
 
+  modelFromMesh(mesh) {
+    var model = GLContext.createModel();
+    for (name in mesh.buffers)
+      this.setVertexBuffer(model, name, mesh.buffers[name].buffer, mesh.buffers[name].components);
+    return model;
+  }
+
   setUniform(model, name, data, components) {
     model.uniforms[name] = {data: data, components: components};
   }
