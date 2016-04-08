@@ -31,6 +31,7 @@
     "babel-preset-stage-0": "6.3.13",
     "class-bind": "^0.2.0",
     "history": "^2.0.1",
+    "json-loader": "^0.5.4",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-redux": "^4.4.1",
