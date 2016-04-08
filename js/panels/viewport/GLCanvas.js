@@ -6,9 +6,8 @@ export default class GLCanvas extends React.Component {
   constructor(props) {
 		super(props);
     this.glContext = new GLContext();
-    this.meshes = require('json!./Meshes.json');
     this.models = [];
-    this.activeModel = 1;
+    this.activeModel = 0;
     this.timestamp = 0.0;
 	}
 
@@ -48,28 +47,55 @@ export default class GLCanvas extends React.Component {
     console.log('componentDidUpdate');
 
     // TODO update the shader and re-draw if not animated
+    this.updateActiveModel();
     this.drawFrame();
   }
 
+  updateActiveModel() {
+    this.activeModel = 0;
+    for (var i = 0; i < this.props.meshes.length; ++i) {
+      if (this.props.active === this.props.meshes[i].name) {
+        this.activeModel = i;
+        break;
+      }
+    }
+  }
+
   setModelShader() {
+    // Shader for displaying Normals.
+    // var shader = this.glContext.loadShader(
+    //   "attribute vec4 position; attribute vec4 normal; varying vec3 vnormal; void main() {gl_Position = position; vnormal = normal.xyz;}",
+    //   "varying mediump vec3 vnormal; void main() {gl_FragColor = vec4(normalize(vnormal)/2.0+vec3(0.5, 0.5, 0.5), 1.0);}"
+    // );
+
+    // Shader for displaying Normals.
+    // var shader = this.glContext.loadShader(
+    //   "attribute vec4 position; attribute vec4 normal; varying vec3 vnormal; void main() {gl_Position = position; vnormal = normal.xyz;}",
+    //   "varying mediump vec3 vnormal; void main() {gl_FragColor = vec4(normalize(vnormal), 1.0);}"
+    // );
+
+    // Shader for displaying Vertex Colors.
     var shader = this.glContext.loadShader(
       "attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; void main() {gl_Position = position; vcolor = color_0;}",
       "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
     );
 
+    // Shader for displaying Texture Coordinates(UVs).
     // var shader = this.glContext.loadShader(
     //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
     //   "varying mediump vec2 uv; void main() {gl_FragColor = vec4(uv, 0.0, 1.0);}"
     // );
 
-    // var shader = this.glContext.loadShader(
-    //   "attribute vec4 position; void main() {gl_Position = position;}",
-    //   "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
-    // );
-
+    // Shader for displaying Textured geomentry using a texture and UVs.
     // var shader = this.glContext.loadShader(
     //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
     //   "varying mediump vec2 uv; uniform sampler2D texture0; void main() {gl_FragColor = texture2D(texture0, uv);}"
+    // );
+
+    // Shader for displaying geomentry in a solid color.
+    // var shader = this.glContext.loadShader(
+    //   "attribute vec4 position; void main() {gl_Position = position;}",
+    //   "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
     // );
 
     // Assign the shader to all the models
@@ -80,8 +106,8 @@ export default class GLCanvas extends React.Component {
   setModelBuffers() {
     this.glContext.addTexture('grid', 'images/grid.png');
 
-    for (var i = 0; i < this.meshes.length; ++i)
-      this.models.push(this.glContext.modelFromMesh(this.meshes[i]));
+    for (var i = 0; i < this.props.meshes.length; ++i)
+      this.models.push(this.glContext.modelFromMesh(this.props.meshes[i]));
 
     var color = [
       0.2, 0.2, 1.0, 1.0
