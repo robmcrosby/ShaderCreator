@@ -44,7 +44,7 @@ export default class Source extends React.Component {
 			source = buildFragmentShader(this.props.shader, versions[this.state.version]); //this.props.shader.createFragmentSource(versions[this.state.version]);
 
 		return (
-			<div class="col-md-6">
+			<div class="col-xs-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					<h4>Shader Source</h4>

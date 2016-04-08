@@ -28,7 +28,7 @@ export default class Preview extends React.Component {
     });
 
     return(
-      <div class="col-md-6">
+      <div class="col-xs-6">
       <div class="panel panel-default">
         <div class="panel-heading">
           <h4>Preview</h4>

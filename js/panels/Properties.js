@@ -28,7 +28,7 @@ export default class Properties extends React.Component {
 			propertiesView = <InputProperties shader={this.props.shader} updateShader={this.updateShader} />
 
 		return (
-			<div class="col-md-6">
+			<div class="col-xs-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					<h4>Shader Properties</h4>
