@@ -1,5 +1,6 @@
 import React from "react";
 import GLContext from "./GLContext";
+import Vector from "./Vector";
 
 
 export default class GLCanvas extends React.Component {
@@ -122,12 +123,11 @@ export default class GLCanvas extends React.Component {
     var color = [
       0.2, 0.2, 1.0, 1.0
     ];
-    var transform = [
-      1.0, 0.0, 0.0, 0.0,
-      0.0, 1.0, 0.0, 0.0,
-      0.0, 0.0, 1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0
-    ];
+    // var eye = Vector.vec3(0.5, 0.5, 0.5);
+    // var center = Vector.vec3(0.0, 0.0, 0.0);
+    // var up = Vector.vec3(0.0, 1.0, 0.0);
+    // var transform = Vector.mat4_lookAt(eye, center, up);
+    var transform = Vector.mat4_identity();
 
     for (var i = 0; i < this.models.length; ++i) {
       this.glContext.setUniform(this.models[i], 'color', color, 4);

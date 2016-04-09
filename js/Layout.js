@@ -21,6 +21,8 @@ export default class Layout extends React.Component {
 				<div class="row">
 					<Properties shader={this.props.shader} updateShader={this.updateShader} />
 					<Preview shader={this.props.shader} />
+				</div>
+				<div class="row">
 					<Source shader={this.props.shader} />
 				</div>
 			</div>
