@@ -62,6 +62,16 @@ export default class GLCanvas extends React.Component {
   }
 
   setModelShader() {
+    // mat4 projection;
+    //   mat4 view;
+
+    // Shader for displaying Vertex Colors.
+    var shader = this.glContext.loadShader(
+      "struct Model {mat4 transform;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Model model; void main() {gl_Position = model.transform * position; vcolor = color_0;}",
+      "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
+    );
+
+
     // Shader for displaying Normals.
     // var shader = this.glContext.loadShader(
     //   "attribute vec4 position; attribute vec4 normal; varying vec3 vnormal; void main() {gl_Position = position; vnormal = normal.xyz;}",
@@ -75,10 +85,10 @@ export default class GLCanvas extends React.Component {
     // );
 
     // Shader for displaying Vertex Colors.
-    var shader = this.glContext.loadShader(
-      "attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; void main() {gl_Position = position; vcolor = color_0;}",
-      "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
-    );
+    // var shader = this.glContext.loadShader(
+    //   "attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; void main() {gl_Position = position; vcolor = color_0;}",
+    //   "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
+    // );
 
     // Shader for displaying Texture Coordinates(UVs).
     // var shader = this.glContext.loadShader(
@@ -121,7 +131,8 @@ export default class GLCanvas extends React.Component {
 
     for (var i = 0; i < this.models.length; ++i) {
       this.glContext.setUniform(this.models[i], 'color', color, 4);
-      this.glContext.setUniform(this.models[i], 'transform', transform, 16);
+      //this.glContext.setUniform(this.models[i], 'transform', transform, 16);
+      this.glContext.setStruct(this.models[i], 'model', 'transform', transform, 16);
       this.glContext.setTexture(this.models[i], 'grid');
     }
   }

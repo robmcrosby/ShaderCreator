@@ -47,6 +47,11 @@ export default class GLContext {
     model.uniforms[name] = {data: data, components: components};
   }
 
+  setStruct(model, name, part, data, components) {
+    if (!(name in model.uniforms))
+      model.uniforms[name] = {struct:{}};
+    model.uniforms[name].struct[part] = {data: data, components: components};
+  }
 
   setShader(model, vertexSrc, fragmentSrc) {
     model.shader = this.loadShader(vertexSrc, fragmentSrc);
@@ -222,8 +227,18 @@ export default class GLContext {
 
   applyUniform(shader, name, uniform) {
     if (uniform) {
-      if (Array.isArray(uniform.data))
-        this.uploadUniform(shader, name, uniform.data, uniform.components);
+      if ('struct' in uniform) {
+        for (var part in uniform.struct) {
+          const data = uniform.struct[part].data;
+          const components = uniform.struct[part].components;
+          this.uploadUniform(shader, name+'.'+part, data, components);
+        }
+      }
+      else {
+        const data = uniform.data;
+        const components = uniform.components;
+        this.uploadUniform(shader, name, data, components);
+      }
     }
   }
 
