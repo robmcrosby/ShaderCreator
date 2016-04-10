@@ -163,7 +163,7 @@ export default class GLContext {
     }
   }
 
-  draw(model) {
+  draw(model, uniformMap) {
     var gl = this.context;
     if (gl && model) {
       gl.useProgram(model.shader);
@@ -172,7 +172,7 @@ export default class GLContext {
       var vertexCount = this.applyVertexBuffers(model.shader, model.vertexBuffers);
 
       // Apply the uniforms and texturest to the shader.
-      this.applyUniforms(model.shader, model.uniforms);
+      this.applyUniforms(model.shader, uniformMap);
       this.applyTextures(model.shader, model.textures);
 
       // Draw the mesh.

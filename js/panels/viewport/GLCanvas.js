@@ -1,5 +1,6 @@
 import React from "react";
 import GLContext from "./GLContext";
+import UniformMap from "./UniformMap";
 import Vector from "./Vector";
 
 
@@ -7,6 +8,8 @@ export default class GLCanvas extends React.Component {
   constructor(props) {
 		super(props);
     this.glContext = new GLContext();
+    this.uniformMap = new UniformMap();
+
     this.models = [];
     this.activeModel = 0;
     this.timestamp = 0.0;
@@ -68,7 +71,7 @@ export default class GLCanvas extends React.Component {
 
     // Shader for displaying Vertex Colors.
     var shader = this.glContext.loadShader(
-      "struct Model {mat4 transform;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Model model; void main() {gl_Position = model.transform * position; vcolor = color_0;}",
+      "struct Camera {mat4 projection; mat4 view; vec4 origin;}; struct Model {mat4 transform; vec4 rotation;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Model model; void main() {gl_Position = model.transform * position; vcolor = color_0;}",
       "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
     );
 
@@ -120,19 +123,18 @@ export default class GLCanvas extends React.Component {
     for (var i = 0; i < this.props.meshes.length; ++i)
       this.models.push(this.glContext.modelFromMesh(this.props.meshes[i]));
 
-    var color = [
-      0.2, 0.2, 1.0, 1.0
-    ];
+    var color = Vector.vec4(0.2, 0.2, 1.0, 1.0);
+    var transform = Vector.mat4_identity();
+
     // var eye = Vector.vec3(0.5, 0.5, 0.5);
     // var center = Vector.vec3(0.0, 0.0, 0.0);
     // var up = Vector.vec3(0.0, 1.0, 0.0);
     // var transform = Vector.mat4_lookAt(eye, center, up);
-    var transform = Vector.mat4_identity();
+
+    this.uniformMap.setUniform('color', color, 4);
+    this.uniformMap.setStruct('model', 'transform', transform, 16);
 
     for (var i = 0; i < this.models.length; ++i) {
-      this.glContext.setUniform(this.models[i], 'color', color, 4);
-      //this.glContext.setUniform(this.models[i], 'transform', transform, 16);
-      this.glContext.setStruct(this.models[i], 'model', 'transform', transform, 16);
       this.glContext.setTexture(this.models[i], 'grid');
     }
   }
@@ -162,6 +164,6 @@ export default class GLCanvas extends React.Component {
       this.canvas.width = this.canvas.height = this.canvas.offsetWidth;
 
     this.glContext.clear();
-    this.glContext.draw(this.models[this.activeModel]);
+    this.glContext.draw(this.models[this.activeModel], this.uniformMap);
   }
 }
