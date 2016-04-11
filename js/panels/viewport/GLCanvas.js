@@ -16,7 +16,12 @@ export default class GLCanvas extends React.Component {
     this.models = [];
     this.activeModel = 0;
 
-    this.timestamp = 0.0;
+    // Angle for the Turn Table Animation
+    this.rotation = 0.0;
+    this.rotationRate = 0.001;
+
+    this.timeElapsed = 0.0;
+    this.timeStamp = 0.0;
 	}
 
   render() {
@@ -43,22 +48,21 @@ export default class GLCanvas extends React.Component {
       this.initUniforms();
       this.updateShader();
 
-      this.drawFrame();
-      //this.startAnimating();
+      //this.drawFrame();
+      this.startAnimating();
     }
   }
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    //this.stopAnimating();
+    this.stopAnimating();
   }
 
   componentDidUpdate() {
     console.log('componentDidUpdate');
 
-    // TODO update the shader and re-draw if not animated
     this.updateActiveModel();
-    this.drawFrame();
+    //this.drawFrame();
   }
 
   updateActiveModel() {
@@ -73,8 +77,8 @@ export default class GLCanvas extends React.Component {
 
   updateShader() {
     this.mainShader = this.glContext.loadShader(
-      "struct Camera {mat4 projection; mat4 view; vec4 origin;}; struct Model {mat4 transform; vec4 rotation;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Model model; void main() {gl_Position = model.transform * position; vcolor = color_0;}",
-      "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
+      "struct Camera {mat4 projection; mat4 view; vec4 origin;}; struct Model {mat4 transform; vec4 rotation;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Camera camera; uniform Model model; void main() {gl_Position = camera.projection * camera.view * model.transform * position; vcolor = color_0;}",
+      "struct Material {mediump vec4 ambiant; mediump vec4 diffuse; mediump vec4 specular; mediump vec4 settings;}; uniform Material material; varying mediump vec4 vcolor; void main() {gl_FragColor = material.ambiant * vcolor;}"
     );
   }
 
@@ -142,19 +146,50 @@ export default class GLCanvas extends React.Component {
   }
 
   initUniforms() {
-    var color = Vector.vec4(0.2, 0.2, 1.0, 1.0);
-    var transform = Vector.mat4_identity();
+    // Calculate the Projection Matrix
+    var projection = Vector.mat4_frustum(-0.3, 0.3, -0.3, 0.3, 1.0, 10.0);
 
-    this.uniformMap.setUniform('color', color, 4);
-    this.uniformMap.setStruct('model', 'transform', transform, 16);
+    // Calculate the View Matrix
+    var orig = Vector.vec3(-0.6, 0.8, -1.8);
+    var center = Vector.vec3(0.0, 0.0, 0.0);
+    var up = Vector.vec3(0.0, 1.0, 0.0);
+    var view = Vector.mat4_lookAt(orig, center, up);
+
+    // Set the Camera struct
+    this.uniformMap.setStruct('camera', 'projection', projection, 16);
+    this.uniformMap.setStruct('camera', 'view', view, 16);
+    this.uniformMap.setStruct('camera', 'origin', [orig[0], orig[1], orig[2], 0.0], 4);
+
+    // Set the Model struct
+    this.uniformMap.setStruct('model', 'transform', Vector.mat4_identity(), 16);
+    this.uniformMap.setStruct('model', 'rotation', [0.0, 0.0, 0.0, 1.0], 4);
+
+    // Set the Material struct
+    this.uniformMap.setStruct('material', 'ambiant', [1.0, 1.0, 1.0, 1.0], 4);
+    this.uniformMap.setStruct('material', 'diffuse', [0.0, 0.0, 0.0, 1.0], 4);
+    this.uniformMap.setStruct('material', 'specular', [0.0, 0.0, 0.0, 1.0], 4);
+    this.uniformMap.setStruct('material', 'settings', [0.0, 0.0, 0.0, 0.0], 4);
+
+    // Set the Lights
+  }
+
+  updateUniforms() {
+    if (this.timeElapsed < 32.0) {
+      this.rotation += this.rotationRate * this.timeElapsed;
+      var transform = Vector.mat4_rotY(this.rotation);
+      this.uniformMap.setStruct('model', 'transform', transform, 16);
+    }
   }
 
   startAnimating() {
     const render = (timestamp) => {
-      this.timestamp = timestamp;
-      this.renderID = window.requestAnimationFrame(render);
+      this.timeElapsed = timestamp - this.timeStamp;
+      this.timeStamp = timestamp;
+      this.updateUniforms();
       this.drawFrame();
+      this.renderID = window.requestAnimationFrame(render);
     }
+
     this.renderID = window.requestAnimationFrame(render);
   }
 

@@ -24,22 +24,24 @@ export default class Vector {
   }
 
   static vec3_scaled(v, x, y, z) {
-    return [v[0]/x, v[1]/y, v[2]/z];
+    return [v[0]*x, v[1]*y, v[2]*z];
   }
 
   static vec3_subtract(v1, v2) {
-    return [v1[0]-v2[0], v1[1]-v2[1], v1[1]-v2[1]];
+    return [v1[0]-v2[0], v1[1]-v2[1], v1[2]-v2[2]];
   }
 
   static vec3_add(v1, v2) {
-    return [v1[0]+v2[0], v1[1]+v2[1], v1[1]+v2[1]];
+    return [v1[0]+v2[0], v1[1]+v2[1], v1[2]+v2[2]];
   }
 
   static vec3_normalized(v) {
     var l = Vector.vec3_length(v);
-    if (l !== 0.0)
-      return Vector.vec3_scaled(v, l, l, l);
-    return [0.0, 0.0, 0.0];
+    if (l !== 0.0) {
+      var s = 1.0/l;
+      return Vector.vec3_scaled(v, s, s, s);
+    }
+    return [v[0], v[1], v[2]];
   }
 
   static vec3_crossed(v1, v2) {
@@ -123,12 +125,12 @@ export default class Vector {
   }
 
   static mat4_frustum(left, right, bottom, top, near, far) {
-    var a = (2 * near) / (right - left);
-    var b = (2 * near) / (top - bottom);
+    var a = (2.0 * near) / (right - left);
+    var b = (2.0 * near) / (top - bottom);
     var c = (right + left) / (right - left);
     var d = (top + bottom) / (top - bottom);
     var e = -(far + near) / (far - near);
-    var f = (-2 * far * near) / (far - near);
+    var f = (-2.0 * far * near) / (far - near);
 
     return [
       a,   0.0, 0.0, 0.0,
@@ -139,9 +141,9 @@ export default class Vector {
   }
 
   static mat4_ortho(left, right, bottom, top, near, far) {
-    var a = static_cast<T>(2) / (right - left);
-    var b = static_cast<T>(2) / (top - bottom);
-    var c = static_cast<T>(-2) / (far - near);
+    var a = 2.0 / (right - left);
+    var b = 2.0/ (top - bottom);
+    var c = 2.0 / (far - near);
     var d = -(right + left) / (right - left);
     var e = -(top + bottom) / (top - bottom);
     var f = -(far + near) / (far - near);
