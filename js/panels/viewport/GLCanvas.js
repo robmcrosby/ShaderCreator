@@ -4,6 +4,10 @@ import Model from "./Model";
 import UniformMap from "./UniformMap";
 import Vector from "./Vector";
 
+import ShaderVersion from "../../models/ShaderVersion";
+import buildVertexShader from "../../VertexShaderBuilder";
+import buildFragmentShader from "../../FragmentShaderBuilder";
+
 
 export default class GLCanvas extends React.Component {
   constructor(props) {
@@ -61,6 +65,7 @@ export default class GLCanvas extends React.Component {
   componentDidUpdate() {
     console.log('componentDidUpdate');
 
+    this.updateShader();
     this.updateActiveModel();
     //this.drawFrame();
   }
@@ -76,68 +81,23 @@ export default class GLCanvas extends React.Component {
   }
 
   updateShader() {
-    this.mainShader = this.glContext.loadShader(
-      "struct Camera {mat4 projection; mat4 view; vec4 origin;}; struct Model {mat4 transform; vec4 rotation;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Camera camera; uniform Model model; void main() {gl_Position = camera.projection * camera.view * model.transform * position; vcolor = color_0;}",
-      "struct Material {mediump vec4 ambiant; mediump vec4 diffuse; mediump vec4 specular; mediump vec4 settings;}; uniform Material material; varying mediump vec4 vcolor; void main() {gl_FragColor = material.ambiant * vcolor;}"
-    );
-  }
+    // this.mainShader = this.glContext.loadShader(
+    //   "struct Camera {mat4 projection; mat4 view; vec4 origin;}; struct Model {mat4 transform; vec4 rotation;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Camera camera; uniform Model model; void main() {gl_Position = camera.projection * camera.view * model.transform * position; vcolor = color_0;}",
+    //   "struct Material {mediump vec4 ambiant; mediump vec4 diffuse; mediump vec4 specular; mediump vec4 settings;}; uniform Material material; varying mediump vec4 vcolor; void main() {gl_FragColor = material.ambiant * vcolor;}"
+    // );
 
-  // setModelShader() {
-  //   // mat4 projection;
-  //   //   mat4 view;
-  //
-  //   // Shader for displaying Vertex Colors.
-  //   var shader = this.glContext.loadShader(
-  //     "struct Camera {mat4 projection; mat4 view; vec4 origin;}; struct Model {mat4 transform; vec4 rotation;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Model model; void main() {gl_Position = model.transform * position; vcolor = color_0;}",
-  //     "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
-  //   );
-  //
-  //
-  //   // Shader for displaying Normals.
-  //   // var shader = this.glContext.loadShader(
-  //   //   "attribute vec4 position; attribute vec4 normal; varying vec3 vnormal; void main() {gl_Position = position; vnormal = normal.xyz;}",
-  //   //   "varying mediump vec3 vnormal; void main() {gl_FragColor = vec4(normalize(vnormal)/2.0+vec3(0.5, 0.5, 0.5), 1.0);}"
-  //   // );
-  //
-  //   // Shader for displaying Normals.
-  //   // var shader = this.glContext.loadShader(
-  //   //   "attribute vec4 position; attribute vec4 normal; varying vec3 vnormal; void main() {gl_Position = position; vnormal = normal.xyz;}",
-  //   //   "varying mediump vec3 vnormal; void main() {gl_FragColor = vec4(normalize(vnormal), 1.0);}"
-  //   // );
-  //
-  //   // Shader for displaying Vertex Colors.
-  //   // var shader = this.glContext.loadShader(
-  //   //   "attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; void main() {gl_Position = position; vcolor = color_0;}",
-  //   //   "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
-  //   // );
-  //
-  //   // Shader for displaying Texture Coordinates(UVs).
-  //   // var shader = this.glContext.loadShader(
-  //   //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
-  //   //   "varying mediump vec2 uv; void main() {gl_FragColor = vec4(uv, 0.0, 1.0);}"
-  //   // );
-  //
-  //   // Shader for displaying Textured geomentry using a texture and UVs.
-  //   // var shader = this.glContext.loadShader(
-  //   //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
-  //   //   "varying mediump vec2 uv; uniform sampler2D texture0; void main() {gl_FragColor = texture2D(texture0, uv);}"
-  //   // );
-  //
-  //   // Shader for displaying geomentry in a solid color.
-  //   // var shader = this.glContext.loadShader(
-  //   //   "attribute vec4 position; void main() {gl_Position = position;}",
-  //   //   "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
-  //   // );
-  //
-  //   // Assign the shader to all the models
-  //   // for (var i = 0; i < this.oldModels.length; ++i)
-  //   //   this.oldModels[i].shader = shader;
-  // }
+    const version = new ShaderVersion('OpenGL ES 2.0', '#version 100', 'embeded', 2.0);
+    this.mainShader = this.glContext.loadShader(
+      buildVertexShader(this.props.shader, version),
+      buildFragmentShader(this.props.shader, version)
+    )
+  }
 
   initModels() {
     for (var i = 0; i < this.props.meshes.length; ++i) {
       this.models.push(new Model(this.glContext));
       this.models[i].loadMesh(this.props.meshes[i]);
+      this.models[i].addTexture('grid');
     }
   }
 

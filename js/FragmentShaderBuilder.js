@@ -20,9 +20,9 @@ export default function buildFragmentShader(properties, version) {
 function buildDefines(properties, version) {
   var src = version.header + '\n\n';
 
-  // Define the number of lights if there is shading.
-  if (properties.shadingEnabled())
-    src += '#define NUM_LIGHTS 8\n\n';
+  // // Define the number of lights if there is shading.
+  // if (properties.shadingEnabled())
+  //   src += '#define NUM_LIGHTS 8\n\n';
 
   return src;
 }
@@ -32,22 +32,14 @@ function buildDefines(properties, version) {
  */
 function buildStructs(properties, version) {
   var src = '';
-
-  if (properties.specularEnabled()) {
-    // Camera Struct
-    src += 'struct Camera {\n';
-    src += '  mat4 projection;\n';
-    src += '  mat4 view;\n';
-    src += '  vec4 position;\n';
-    src += '};\n\n';
-  }
+  var p = '  ' + version.precisionQuantifier('mediump');
 
   // Material Struct
   src += 'struct Material {\n';
-  src += '  vec4 ambiantColor;\n';
-  src += '  vec4 diffuseColor;\n';
-  src += '  vec4 specularColor;\n';
-  src += '  vec4 shadingParams;\n';
+  src += p + 'vec4 ambiant;\n';
+  src += p + 'vec4 diffuse;\n';
+  src += p + 'vec4 specular;\n';
+  src += p + 'vec4 params;\n';
   src += '};\n\n';
 
   return src;
@@ -58,8 +50,10 @@ function buildStructs(properties, version) {
  */
 function buildFunctions(properties, version) {
   var src = '';
-  src += properties.diffuseEnabled() ? buildDiffuseFunction(properties, version) : '';
-  src += properties.specularEnabled() ? buildSpecularFunction(properties, version) : '';
+
+  // src += properties.diffuseEnabled() ? buildDiffuseFunction(properties, version) : '';
+  // src += properties.specularEnabled() ? buildSpecularFunction(properties, version) : '';
+
   return src;
 }
 
@@ -67,7 +61,7 @@ function buildFunctions(properties, version) {
  *
  */
 function buildDiffuseFunction(properties, version) {
-  var src = 'float diffuse(vec3 position, vec3 normal, vec2 params, mat4 light) {\n';
+  var src = 'float diffuse(vec3 position, vec3 normal, vec3 view, vec2 params, mat4 light) {\n';
 
   const func = properties.diffuseFunction();
   if (func === 'Lambert') {
@@ -101,7 +95,7 @@ function buildDiffuseFunction(properties, version) {
  *
  */
 function buildSpecularFunction(properties, version) {
-  var src = 'float specular(vec3 position, vec3 normal, vec3 camera, vec4 params, mat4 light) {\n';
+  var src = 'float specular(vec3 position, vec3 normal, vec3 view, vec2 params, mat4 light) {\n';
 
   const func = properties.specularFunction();
   if (func === 'CookTorr') {
@@ -136,10 +130,8 @@ function buildSpecularFunction(properties, version) {
  */
 function buildUniforms(properties, version) {
   var src = 'uniform Material material;\n';
-  if (properties.shadingEnabled()) {
-    src += properties.specularEnabled() ? 'uniform Camera camera;\n' : '';
-    src += 'uniform mat4 lights[NUM_LIGHTS];\n';
-  }
+  // if (properties.shadingEnabled())
+  //   src += 'uniform mat4 lights[NUM_LIGHTS];\n';
   return src + '\n';
 }
 
@@ -166,6 +158,7 @@ function buildInputs(properties, version) {
   if (properties.shadingEnabled()) {
     src += version.fragmentInput('mediump', 'vec3', 'v_position');
     src += version.fragmentInput('mediump', 'vec3', 'v_normal');
+    src += version.fragmentInput('mediump', 'vec3', 'v_view');
   }
 
   // Add any vertex colors
@@ -196,30 +189,33 @@ function buildOutputs(properties, version) {
 function buildMain(properties, version) {
   var src = 'void main() {\n';
 
-  // Normalize the surface normal.
-  src += properties.shadingEnabled()  ? '  vec3 normal = normalize(v_normal);\n' : '';
+  // Normalize the normal and view vectors.
+  // if (properties.shadingEnabled()) {
+  //   src += '  vec3 normal = normalize(v_normal);\n';
+  //   src += '  vec3 view = normalize(v_view);\n';
+  // }
 
-  if (properties.diffuseEnabled())
-    src += '  vec4 diffuseColor = ' + buildDiffuseColor(properties, version);
-  src += properties.specularEnabled() ? '  vec4 specularColor = material.specularColor;\n' : '';
+  // if (properties.diffuseEnabled())
+  //   src += '  vec4 diffuseColor = ' + buildDiffuseColor(properties, version);
+  // src += properties.specularEnabled() ? '  vec4 specularColor = material.specular;\n' : '';
 
   // Initalize the output color to the ambiant component.
   src += '  gl_FragColor = ' + buildAmbiantColor(properties, version);
 
-  if (properties.shadingEnabled()) {
-    // Calculate and add the diffuse and specular colors for each light.
-    src += '  for (int i = 0; i < NUM_LIGHTS; ++i) {\n';
-    src += properties.diffuseEnabled()  ? '    float d = diffuse(v_position, normal, material.shadingParams.xy, lights[i]);\n' : '';
-    src += properties.specularEnabled() ? '    float s = specular(v_position, normal, camera.position.xyz, material.shadingParams.zw, lights[i]);\n' : '';
-
-    // Assemble the light equation.
-    src += '    gl_FragColor +=';
-    src += properties.diffuseEnabled() ? ' d * (diffuseColor * lights[i].x)' : '';
-    src += properties.diffuseEnabled() && properties.specularEnabled() ? ' +' : '';
-    src += properties.specularEnabled() ? ' s * (specularColor * lights[i].y)' : '';
-    src += ';\n';
-    src += '  }\n';
-  }
+  // if (properties.shadingEnabled()) {
+  //   // Calculate and add the diffuse and specular colors for each light.
+  //   src += '  for (int i = 0; i < NUM_LIGHTS; ++i) {\n';
+  //   src += properties.diffuseEnabled()  ? '    float d = diffuse(v_position, normal, view, material.shadingParams.xy, lights[i]);\n' : '';
+  //   src += properties.specularEnabled() ? '    float s = specular(v_position, normal, view, material.shadingParams.zw, lights[i]);\n' : '';
+  //
+  //   // Assemble the light equation.
+  //   src += '    gl_FragColor +=';
+  //   src += properties.diffuseEnabled() ? ' d * (diffuseColor * lights[i].x)' : '';
+  //   src += properties.diffuseEnabled() && properties.specularEnabled() ? ' +' : '';
+  //   src += properties.specularEnabled() ? ' s * (specularColor * lights[i].y)' : '';
+  //   src += ';\n';
+  //   src += '  }\n';
+  // }
 
   // Always set the alpha component to 1.0.
   src += '  gl_FragColor.w = 1.0;\n';
@@ -232,7 +228,7 @@ function buildMain(properties, version) {
  */
 function buildAmbiantColor(properties, version) {
   const type = properties.ambiantInputType();
-  var src = 'material.ambiantColor';
+  var src = 'material.ambiant';
 
   if (type === 'Vertex')
     src += ' * v_color' + properties.ambiantInputIndex();
@@ -246,7 +242,7 @@ function buildAmbiantColor(properties, version) {
  */
 function buildDiffuseColor(properties, version) {
   const type = properties.diffuseInputType();
-  var src = 'material.diffuseColor';
+  var src = 'material.diffuse';
 
   if (type === 'Vertex')
     src += ' * v_color' + properties.diffuseInputIndex();
