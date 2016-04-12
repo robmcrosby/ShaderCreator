@@ -62,6 +62,16 @@ export default class Vector {
     return ([x, y, z, w]);
   }
 
+  static quat(radians, axis) {
+    var s = Math.sin(radians/2.0);
+    axis = Vector.vec3_normalized(axis);
+    return [s*axis[0], s*axis[1], s*axis[2], Math.cos(radians/2.0)];
+  }
+
+  // static quat_rotX(radians) {
+  //
+  // }
+
 
 
   static mat4_identity() {

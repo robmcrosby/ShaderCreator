@@ -98,11 +98,13 @@ export default class GLCanvas extends React.Component {
       this.models.push(new Model(this.glContext));
       this.models[i].loadMesh(this.props.meshes[i]);
       this.models[i].addTexture('grid');
+      this.models[i].addTexture('concrete');
     }
   }
 
   initTextures() {
     this.glContext.addTexture('grid', 'images/grid.png');
+    this.glContext.addTexture('concrete', 'images/concrete.png');
   }
 
   initUniforms() {
@@ -125,19 +127,37 @@ export default class GLCanvas extends React.Component {
     this.uniformMap.setStruct('model', 'rotation', [0.0, 0.0, 0.0, 1.0], 4);
 
     // Set the Material struct
-    this.uniformMap.setStruct('material', 'ambiant', [1.0, 1.0, 1.0, 1.0], 4);
-    this.uniformMap.setStruct('material', 'diffuse', [0.0, 0.0, 0.0, 1.0], 4);
+    this.uniformMap.setStruct('material', 'ambiant', [0.2, 0.2, 0.2, 1.0], 4);
+    this.uniformMap.setStruct('material', 'diffuse', [0.8, 0.8, 0.8, 1.0], 4);
     this.uniformMap.setStruct('material', 'specular', [0.0, 0.0, 0.0, 1.0], 4);
     this.uniformMap.setStruct('material', 'settings', [0.0, 0.0, 0.0, 0.0], 4);
 
     // Set the Lights
+    const lightColors = [
+      0.8, 0.8, 0.8, 1.0,
+      0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0
+    ];
+    this.uniformMap.setUniform('lightColors', lightColors, 4);
+    const d = Vector.vec3_normalized([1.0, -1.0, 0.0]);
+    const lightPositions = [
+      d[0], d[1], d[2], 0.0,
+      0.0, -1.0, 0.0, 0.0,
+      0.0, -1.0, 0.0, 0.0,
+      0.0, -1.0, 0.0, 0.0
+    ];
+    this.uniformMap.setUniform('lightPositions', lightPositions, 4);
   }
 
   updateUniforms() {
     if (this.timeElapsed < 32.0) {
       this.rotation += this.rotationRate * this.timeElapsed;
       var transform = Vector.mat4_rotY(this.rotation);
+      var rotation = Vector.quat(this.rotation, [0.0, 1.0, 0.0]);
+
       this.uniformMap.setStruct('model', 'transform', transform, 16);
+      this.uniformMap.setStruct('model', 'rotation', rotation, 4);
     }
   }
 
