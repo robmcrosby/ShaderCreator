@@ -221,16 +221,16 @@ export default class GLContext {
       if (loc) {
         switch (components) {
           case 1:
-            gl.uniform1fv(loc, new Float32Array(data), data.length/components);
+            gl.uniform1fv(loc, new Float32Array(data));
             break;
           case 2:
-            gl.uniform2fv(loc, new Float32Array(data), data.length/components);
+            gl.uniform2fv(loc, new Float32Array(data));
             break;
           case 3:
-            gl.uniform3fv(loc, new Float32Array(data), data.length/components);
+            gl.uniform3fv(loc, new Float32Array(data));
             break;
           case 4:
-            gl.uniform4fv(loc, new Float32Array(data), data.length/components);
+            gl.uniform4fv(loc, new Float32Array(data));
             break;
           case 9:
             gl.uniformMatrix3fv(loc, false, new Float32Array(data));
