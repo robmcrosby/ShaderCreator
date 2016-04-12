@@ -30,26 +30,15 @@ export default class GLContext {
     this.canvas = null;
   }
 
-  loaded() {return this.canvas !== null && this.context !== null;}
-
-  static createModel() {
-    return {shader: null, vertexBuffers: {}, uniforms: {}, textures: []};
+  loaded() {
+    return this.canvas !== null && this.context !== null;
   }
 
-  modelFromMesh(mesh) {
-    var model = GLContext.createModel();
-    for (name in mesh.buffers)
-      this.setVertexBuffer(model, name, mesh.buffers[name].buffer, mesh.buffers[name].components);
-    return model;
-  }
-
-  setUniform(model, name, data, components) {
-    model.uniforms[name] = {data: data, components: components};
-  }
-
-
-  setShader(model, vertexSrc, fragmentSrc) {
-    model.shader = this.loadShader(vertexSrc, fragmentSrc);
+  createMesh(data) {
+    var mesh = {};
+    for (name in data.buffers)
+      mesh[name] = this.loadVertexBuffer(data.buffers[name].buffer, data.buffers[name].components);
+    return mesh;
   }
 
   loadShader(vertexSrc, fragmentSrc) {
@@ -87,17 +76,6 @@ export default class GLContext {
     return shader;
   }
 
-
-
-  unloadShader(shader) {
-
-  }
-
-
-  setVertexBuffer(model, name, data, components) {
-    model.vertexBuffers[name] = this.loadVertexBuffer(data, components);
-  }
-
   loadVertexBuffer(data, components) {
     var gl = this.context;
     if (gl) {
@@ -109,16 +87,11 @@ export default class GLContext {
     return null;
   }
 
-  unloadVertexBuffer(buffer) {
-
-  }
-
   addTexture(name, file) {
     var gl = this.context;
     if (gl) {
       // Create the texture and add to the model
-      var texture = gl.createTexture();
-      this.textures[name] = texture;
+      var texture = this.getTexture(name);
 
       // Create an image that loads the texture
       var image = new Image();
@@ -127,9 +100,15 @@ export default class GLContext {
     }
   }
 
-  setTexture(model, name) {
-    if (name in this.textures)
-      model.textures.push(this.textures[name]);
+  getTexture(name) {
+    if (!(name in this.textures)) {
+      var texture = null;
+      var gl = this.context;
+      if (gl)
+        texture = gl.createTexture();
+      this.textures[name] = texture;
+    }
+    return this.textures[name];
   }
 
   handleTextureLoaded(image, texture) {
@@ -158,27 +137,24 @@ export default class GLContext {
     }
   }
 
-  draw(model) {
+  draw(shader, mesh, uniformMap, textures) {
     var gl = this.context;
-    if (gl && model) {
-      gl.useProgram(model.shader);
+    if (gl && shader && mesh) {
+      gl.useProgram(shader);
 
-      // Apply the vertex buffers to the shader and get the number of vertices to draw.
-      var vertexCount = this.applyVertexBuffers(model.shader, model.vertexBuffers);
-
-      // Apply the uniforms and texturest to the shader.
-      this.applyUniforms(model.shader, model.uniforms);
-      this.applyTextures(model.shader, model.textures);
-
-      // Draw the mesh.
-      gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+      var vertexCount = this.applyVertexBuffers(shader, mesh);
+      if (vertexCount > 0) {
+        this.applyUniforms(shader, uniformMap);
+        this.applyTextures(shader, textures);
+        gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+      }
     }
   }
 
-  applyVertexBuffers(shader, buffers) {
+  applyVertexBuffers(shader, mesh) {
     var count = 0;
-    for (name in buffers)
-      count = Math.max(count, this.applyVertexBuffer(shader, name, buffers[name]));
+    for (name in mesh)
+      count = Math.max(count, this.applyVertexBuffer(shader, name, mesh[name]));
     return count;
   }
 
@@ -222,8 +198,18 @@ export default class GLContext {
 
   applyUniform(shader, name, uniform) {
     if (uniform) {
-      if (Array.isArray(uniform.data))
-        this.uploadUniform(shader, name, uniform.data, uniform.components);
+      if ('struct' in uniform) {
+        for (var part in uniform.struct) {
+          const data = uniform.struct[part].data;
+          const components = uniform.struct[part].components;
+          this.uploadUniform(shader, name+'.'+part, data, components);
+        }
+      }
+      else {
+        const data = uniform.data;
+        const components = uniform.components;
+        this.uploadUniform(shader, name, data, components);
+      }
     }
   }
 

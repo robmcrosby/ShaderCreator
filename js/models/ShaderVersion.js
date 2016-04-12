@@ -27,9 +27,11 @@ export default class ShaderVersion {
 
   fragmentInput(precision, type, name) {
     var src = this.number > 2.0 ? 'in ' : 'varying ';
-    src += this.platform === 'embeded' ? precision+' ' : '';
+    src += this.precisionQuantifier(precision);
     return src + type + ' ' + name + ';\n';
   }
+
+  precisionQuantifier(precision) {return this.platform === 'embeded' ? precision+' ' : '';}
 
   textureFunction() {return this.number > 2.0 ? 'texture' : 'texture2D';}
 }

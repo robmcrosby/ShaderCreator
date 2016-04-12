@@ -1,14 +1,31 @@
 import React from "react";
 import GLContext from "./GLContext";
+import Model from "./Model";
+import UniformMap from "./UniformMap";
+import Vector from "./Vector";
+
+import ShaderVersion from "../../models/ShaderVersion";
+import buildVertexShader from "../../VertexShaderBuilder";
+import buildFragmentShader from "../../FragmentShaderBuilder";
 
 
 export default class GLCanvas extends React.Component {
   constructor(props) {
 		super(props);
     this.glContext = new GLContext();
+
+    this.uniformMap = new UniformMap();
+    this.mainShader = null;
+
     this.models = [];
     this.activeModel = 0;
-    this.timestamp = 0.0;
+
+    // Angle for the Turn Table Animation
+    this.rotation = 0.0;
+    this.rotationRate = 0.001;
+
+    this.timeElapsed = 0.0;
+    this.timeStamp = 0.0;
 	}
 
   render() {
@@ -30,25 +47,27 @@ export default class GLCanvas extends React.Component {
     if (this.canvas !== null && this.glContext.load(this.canvas)) {
       console.log('Init WebGL Canvas');
 
-      this.setModelBuffers();
-      this.setModelShader();
+      this.initModels();
+      this.initTextures();
+      this.initUniforms();
+      this.updateShader();
 
-      this.drawFrame();
-      //this.startAnimating();
+      //this.drawFrame();
+      this.startAnimating();
     }
   }
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    //this.stopAnimating();
+    this.stopAnimating();
   }
 
   componentDidUpdate() {
     console.log('componentDidUpdate');
 
-    // TODO update the shader and re-draw if not animated
+    this.updateShader();
     this.updateActiveModel();
-    this.drawFrame();
+    //this.drawFrame();
   }
 
   updateActiveModel() {
@@ -61,77 +80,96 @@ export default class GLCanvas extends React.Component {
     }
   }
 
-  setModelShader() {
-    // Shader for displaying Normals.
-    // var shader = this.glContext.loadShader(
-    //   "attribute vec4 position; attribute vec4 normal; varying vec3 vnormal; void main() {gl_Position = position; vnormal = normal.xyz;}",
-    //   "varying mediump vec3 vnormal; void main() {gl_FragColor = vec4(normalize(vnormal)/2.0+vec3(0.5, 0.5, 0.5), 1.0);}"
+  updateShader() {
+    // this.mainShader = this.glContext.loadShader(
+    //   "struct Camera {mat4 projection; mat4 view; vec4 origin;}; struct Model {mat4 transform; vec4 rotation;}; attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; uniform Camera camera; uniform Model model; void main() {gl_Position = camera.projection * camera.view * model.transform * position; vcolor = color_0;}",
+    //   "struct Material {mediump vec4 ambiant; mediump vec4 diffuse; mediump vec4 specular; mediump vec4 settings;}; uniform Material material; varying mediump vec4 vcolor; void main() {gl_FragColor = material.ambiant * vcolor;}"
     // );
 
-    // Shader for displaying Normals.
-    // var shader = this.glContext.loadShader(
-    //   "attribute vec4 position; attribute vec4 normal; varying vec3 vnormal; void main() {gl_Position = position; vnormal = normal.xyz;}",
-    //   "varying mediump vec3 vnormal; void main() {gl_FragColor = vec4(normalize(vnormal), 1.0);}"
-    // );
-
-    // Shader for displaying Vertex Colors.
-    var shader = this.glContext.loadShader(
-      "attribute vec4 position; attribute vec4 color_0; varying vec4 vcolor; void main() {gl_Position = position; vcolor = color_0;}",
-      "varying mediump vec4 vcolor; void main() {gl_FragColor = vcolor;}"
-    );
-
-    // Shader for displaying Texture Coordinates(UVs).
-    // var shader = this.glContext.loadShader(
-    //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
-    //   "varying mediump vec2 uv; void main() {gl_FragColor = vec4(uv, 0.0, 1.0);}"
-    // );
-
-    // Shader for displaying Textured geomentry using a texture and UVs.
-    // var shader = this.glContext.loadShader(
-    //   "attribute vec4 position; attribute vec2 uv_0; varying vec2 uv; void main() {gl_Position = position; uv = uv_0;}",
-    //   "varying mediump vec2 uv; uniform sampler2D texture0; void main() {gl_FragColor = texture2D(texture0, uv);}"
-    // );
-
-    // Shader for displaying geomentry in a solid color.
-    // var shader = this.glContext.loadShader(
-    //   "attribute vec4 position; void main() {gl_Position = position;}",
-    //   "uniform mediump vec4 color; void main() {gl_FragColor = color;}"
-    // );
-
-    // Assign the shader to all the models
-    for (var i = 0; i < this.models.length; ++i)
-      this.models[i].shader = shader;
+    const version = new ShaderVersion('OpenGL ES 2.0', '#version 100', 'embeded', 2.0);
+    this.mainShader = this.glContext.loadShader(
+      buildVertexShader(this.props.shader, version),
+      buildFragmentShader(this.props.shader, version)
+    )
   }
 
-  setModelBuffers() {
+  initModels() {
+    for (var i = 0; i < this.props.meshes.length; ++i) {
+      this.models.push(new Model(this.glContext));
+      this.models[i].loadMesh(this.props.meshes[i]);
+      this.models[i].addTexture('grid');
+      this.models[i].addTexture('concrete');
+    }
+  }
+
+  initTextures() {
     this.glContext.addTexture('grid', 'images/grid.png');
+    this.glContext.addTexture('concrete', 'images/concrete.png');
+  }
 
-    for (var i = 0; i < this.props.meshes.length; ++i)
-      this.models.push(this.glContext.modelFromMesh(this.props.meshes[i]));
+  initUniforms() {
+    // Calculate the Projection Matrix
+    var projection = Vector.mat4_frustum(-0.3, 0.3, -0.3, 0.3, 1.0, 10.0);
 
-    var color = [
-      0.2, 0.2, 1.0, 1.0
+    // Calculate the View Matrix
+    var orig = Vector.vec3(-0.6, 0.8, -1.8);
+    var center = Vector.vec3(0.0, 0.0, 0.0);
+    var up = Vector.vec3(0.0, 1.0, 0.0);
+    var view = Vector.mat4_lookAt(orig, center, up);
+
+    // Set the Camera struct
+    this.uniformMap.setStruct('camera', 'projection', projection, 16);
+    this.uniformMap.setStruct('camera', 'view', view, 16);
+    this.uniformMap.setStruct('camera', 'origin', [orig[0], orig[1], orig[2], 0.0], 4);
+
+    // Set the Model struct
+    this.uniformMap.setStruct('model', 'transform', Vector.mat4_identity(), 16);
+    this.uniformMap.setStruct('model', 'rotation', [0.0, 0.0, 0.0, 1.0], 4);
+
+    // Set the Material struct
+    this.uniformMap.setStruct('material', 'ambiant', [0.2, 0.2, 0.2, 1.0], 4);
+    this.uniformMap.setStruct('material', 'diffuse', [0.8, 0.8, 0.8, 1.0], 4);
+    this.uniformMap.setStruct('material', 'specular', [0.0, 0.0, 0.0, 1.0], 4);
+    this.uniformMap.setStruct('material', 'settings', [0.0, 0.0, 0.0, 0.0], 4);
+
+    // Set the Lights
+    const lightColors = [
+      0.8, 0.8, 0.8, 1.0,
+      0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0,
+      0.0, 0.0, 0.0, 0.0
     ];
-    var transform = [
-      1.0, 0.0, 0.0, 0.0,
-      0.0, 1.0, 0.0, 0.0,
-      0.0, 0.0, 1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0
+    this.uniformMap.setUniform('lightColors', lightColors, 4);
+    const d = Vector.vec3_normalized([1.0, -1.0, 0.0]);
+    const lightPositions = [
+      d[0], d[1], d[2], 0.0,
+      0.0, -1.0, 0.0, 0.0,
+      0.0, -1.0, 0.0, 0.0,
+      0.0, -1.0, 0.0, 0.0
     ];
+    this.uniformMap.setUniform('lightPositions', lightPositions, 4);
+  }
 
-    for (var i = 0; i < this.models.length; ++i) {
-      this.glContext.setUniform(this.models[i], 'color', color, 4);
-      this.glContext.setUniform(this.models[i], 'transform', transform, 16);
-      this.glContext.setTexture(this.models[i], 'grid');
+  updateUniforms() {
+    if (this.timeElapsed < 32.0) {
+      this.rotation += this.rotationRate * this.timeElapsed;
+      var transform = Vector.mat4_rotY(this.rotation);
+      var rotation = Vector.quat(this.rotation, [0.0, 1.0, 0.0]);
+
+      this.uniformMap.setStruct('model', 'transform', transform, 16);
+      this.uniformMap.setStruct('model', 'rotation', rotation, 4);
     }
   }
 
   startAnimating() {
     const render = (timestamp) => {
-      this.timestamp = timestamp;
-      this.renderID = window.requestAnimationFrame(render);
+      this.timeElapsed = timestamp - this.timeStamp;
+      this.timeStamp = timestamp;
+      this.updateUniforms();
       this.drawFrame();
+      this.renderID = window.requestAnimationFrame(render);
     }
+
     this.renderID = window.requestAnimationFrame(render);
   }
 
@@ -150,7 +188,13 @@ export default class GLCanvas extends React.Component {
     if (this.canvas.width !== this.canvas.offsetWidth)
       this.canvas.width = this.canvas.height = this.canvas.offsetWidth;
 
+    // Clear the canvas
     this.glContext.clear();
-    this.glContext.draw(this.models[this.activeModel]);
+
+    // Draw the activeModel
+    var activeModel = this.models[this.activeModel];
+    activeModel.shader = this.mainShader;
+    activeModel.uniformMap = this.uniformMap;
+    activeModel.draw();
   }
 }

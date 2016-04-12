@@ -22,7 +22,7 @@ function buildDefines(properties, version) {
 
   // Define the number of lights if there is shading.
   if (properties.shadingEnabled())
-    src += '#define NUM_LIGHTS 8\n\n';
+    src += '#define NUM_LIGHTS 4\n\n';
 
   return src;
 }
@@ -32,22 +32,14 @@ function buildDefines(properties, version) {
  */
 function buildStructs(properties, version) {
   var src = '';
-
-  if (properties.specularEnabled()) {
-    // Camera Struct
-    src += 'struct Camera {\n';
-    src += '  mat4 projection;\n';
-    src += '  mat4 view;\n';
-    src += '  vec4 position;\n';
-    src += '};\n\n';
-  }
+  var p = '  ' + version.precisionQuantifier('mediump');
 
   // Material Struct
   src += 'struct Material {\n';
-  src += '  vec4 ambiantColor;\n';
-  src += '  vec4 diffuseColor;\n';
-  src += '  vec4 specularColor;\n';
-  src += '  vec4 shadingParams;\n';
+  src += p + 'vec4 ambiant;\n';
+  src += p + 'vec4 diffuse;\n';
+  src += p + 'vec4 specular;\n';
+  src += p + 'vec4 params;\n';
   src += '};\n\n';
 
   return src;
@@ -58,8 +50,10 @@ function buildStructs(properties, version) {
  */
 function buildFunctions(properties, version) {
   var src = '';
+
   src += properties.diffuseEnabled() ? buildDiffuseFunction(properties, version) : '';
   src += properties.specularEnabled() ? buildSpecularFunction(properties, version) : '';
+
   return src;
 }
 
@@ -67,33 +61,44 @@ function buildFunctions(properties, version) {
  *
  */
 function buildDiffuseFunction(properties, version) {
-  var src = 'float diffuse(vec3 position, vec3 normal, vec2 params, mat4 light) {\n';
+  var p = version.precisionQuantifier('mediump');
+  var src = p + 'float diffuseFunc(';
 
-  const func = properties.diffuseFunction();
-  if (func === 'Lambert') {
-    src += '  // Lambert\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Oren-Nayar') {
-    src += '  // Oren-Nayar\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Toon') {
-    src += '  // Toon\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Minnaert') {
-    src += '  // Minnaert\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Fresnel') {
-    src += '  // Fresnel\n';
-    src += '  return 0.0;\n';
-  }
-  else {
-    src += '  // Shadeless\n';
-    src += '  return 1.0;\n';
-  }
+  // Add the function parameters
+  src += p + 'vec3 position, ';
+  src += p + 'vec3 normal, ';
+  src += p + 'vec3 view, ';
+  src += p + 'vec2 params, ';
+  src += p + 'vec4 light) {\n';
+
+  src += p + 'vec3 lightDir = -light.xyz;';
+  src += '  return clamp(dot(normal, lightDir), 0.0, 1.0);\n';
+
+  // const func = properties.diffuseFunction();
+  // if (func === 'Lambert') {
+  //   src += '  // Lambert\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Oren-Nayar') {
+  //   src += '  // Oren-Nayar\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Toon') {
+  //   src += '  // Toon\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Minnaert') {
+  //   src += '  // Minnaert\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Fresnel') {
+  //   src += '  // Fresnel\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else {
+  //   src += '  // Shadeless\n';
+  //   src += '  return 1.0;\n';
+  // }
   return src + '}\n\n';
 }
 
@@ -101,33 +106,43 @@ function buildDiffuseFunction(properties, version) {
  *
  */
 function buildSpecularFunction(properties, version) {
-  var src = 'float specular(vec3 position, vec3 normal, vec3 camera, vec4 params, mat4 light) {\n';
+  var p = version.precisionQuantifier('mediump');
+  var src = p + 'float specularFunc(';
 
-  const func = properties.specularFunction();
-  if (func === 'CookTorr') {
-    src += '  // CookTorr\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Phong') {
-    src += '  // Phong\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Blinn') {
-    src += '  // Blinn\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Toon') {
-    src += '  // Toon\n';
-    src += '  return 0.0;\n';
-  }
-  else if (func === 'Wardlso') {
-    src += '  // Wardlso\n';
-    src += '  return 0.0;\n';
-  }
-  else {
-    src += '  // Shadeless\n';
-    src += '  return 1.0;\n';
-  }
+  // Add the function parameters
+  src += p + 'vec3 position, ';
+  src += p + 'vec3 normal, ';
+  src += p + 'vec3 view, ';
+  src += p + 'vec2 params, ';
+  src += p + 'vec4 light) {\n';
+
+  src += '  return 0.0;\n';
+
+  // const func = properties.specularFunction();
+  // if (func === 'CookTorr') {
+  //   src += '  // CookTorr\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Phong') {
+  //   src += '  // Phong\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Blinn') {
+  //   src += '  // Blinn\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Toon') {
+  //   src += '  // Toon\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else if (func === 'Wardlso') {
+  //   src += '  // Wardlso\n';
+  //   src += '  return 0.0;\n';
+  // }
+  // else {
+  //   src += '  // Shadeless\n';
+  //   src += '  return 1.0;\n';
+  // }
   return src + '}\n\n';
 }
 
@@ -136,9 +151,10 @@ function buildSpecularFunction(properties, version) {
  */
 function buildUniforms(properties, version) {
   var src = 'uniform Material material;\n';
+  var p = version.precisionQuantifier('mediump');
   if (properties.shadingEnabled()) {
-    src += properties.specularEnabled() ? 'uniform Camera camera;\n' : '';
-    src += 'uniform mat4 lights[NUM_LIGHTS];\n';
+    src += 'uniform ' + p + 'vec4 lightColors[NUM_LIGHTS];\n';
+    src += 'uniform ' + p + 'vec4 lightPositions[NUM_LIGHTS];\n';
   }
   return src + '\n';
 }
@@ -166,6 +182,7 @@ function buildInputs(properties, version) {
   if (properties.shadingEnabled()) {
     src += version.fragmentInput('mediump', 'vec3', 'v_position');
     src += version.fragmentInput('mediump', 'vec3', 'v_normal');
+    src += version.fragmentInput('mediump', 'vec3', 'v_view');
   }
 
   // Add any vertex colors
@@ -195,13 +212,17 @@ function buildOutputs(properties, version) {
  */
 function buildMain(properties, version) {
   var src = 'void main() {\n';
+  var p = '  ' + version.precisionQuantifier('mediump');
 
-  // Normalize the surface normal.
-  src += properties.shadingEnabled()  ? '  vec3 normal = normalize(v_normal);\n' : '';
+  // Normalize the normal and view vectors
+  if (properties.shadingEnabled()) {
+    src += p + 'vec3 normal = normalize(v_normal);\n';
+    src += p + 'vec3 view = normalize(v_view);\n';
+  }
 
-  if (properties.diffuseEnabled())
-    src += '  vec4 diffuseColor = ' + buildDiffuseColor(properties, version);
-  src += properties.specularEnabled() ? '  vec4 specularColor = material.specularColor;\n' : '';
+  // Add Varibles for diffuse and specular color
+  src += properties.diffuseEnabled() ? p + 'vec4 diffuseColor = ' + buildDiffuseColor(properties, version) : '';
+  src += properties.specularEnabled() ? p + 'vec4 specularColor = material.specular;\n' : '';
 
   // Initalize the output color to the ambiant component.
   src += '  gl_FragColor = ' + buildAmbiantColor(properties, version);
@@ -209,16 +230,15 @@ function buildMain(properties, version) {
   if (properties.shadingEnabled()) {
     // Calculate and add the diffuse and specular colors for each light.
     src += '  for (int i = 0; i < NUM_LIGHTS; ++i) {\n';
-    src += properties.diffuseEnabled()  ? '    float d = diffuse(v_position, normal, material.shadingParams.xy, lights[i]);\n' : '';
-    src += properties.specularEnabled() ? '    float s = specular(v_position, normal, camera.position.xyz, material.shadingParams.zw, lights[i]);\n' : '';
+    src += properties.diffuseEnabled()  ? '  ' + p + 'float d = diffuseFunc(v_position, normal, view, material.params.xy, lightPositions[i]);\n' : '';
+    src += properties.specularEnabled() ? '  ' + p + 'float s = specularFunc(v_position, normal, view, material.params.zw, lightPositions[i]);\n' : '';
 
     // Assemble the light equation.
     src += '    gl_FragColor +=';
-    src += properties.diffuseEnabled() ? ' d * (diffuseColor * lights[i].x)' : '';
+    src += properties.diffuseEnabled() ? ' d * (diffuseColor * lightColors[i])' : '';
     src += properties.diffuseEnabled() && properties.specularEnabled() ? ' +' : '';
-    src += properties.specularEnabled() ? ' s * (specularColor * lights[i].y)' : '';
-    src += ';\n';
-    src += '  }\n';
+    src += properties.specularEnabled() ? ' s * specularColor' : '';
+    src += ';\n  }\n';
   }
 
   // Always set the alpha component to 1.0.
@@ -232,7 +252,7 @@ function buildMain(properties, version) {
  */
 function buildAmbiantColor(properties, version) {
   const type = properties.ambiantInputType();
-  var src = 'material.ambiantColor';
+  var src = 'material.ambiant';
 
   if (type === 'Vertex')
     src += ' * v_color' + properties.ambiantInputIndex();
@@ -246,7 +266,7 @@ function buildAmbiantColor(properties, version) {
  */
 function buildDiffuseColor(properties, version) {
   const type = properties.diffuseInputType();
-  var src = 'material.diffuseColor';
+  var src = 'material.diffuse';
 
   if (type === 'Vertex')
     src += ' * v_color' + properties.diffuseInputIndex();

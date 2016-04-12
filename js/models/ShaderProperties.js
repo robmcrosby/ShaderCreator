@@ -4,7 +4,7 @@ export default class ShaderProperties {
 		this.ambiantInput = {
 			label: 'Ambiant Color',
 			value: 0,
-			options: ['Material Ambiant Color', 'Vertex Color 1', 'Vertex Color 2', 'Texture 1', 'Texture 2'],
+			options: ['Material Ambiant Color', 'Vertex Color', 'Texture 1', 'Texture 2'],
 		}
 		this.diffuseEnable = {
 			label: 'Diffuse Shading',
@@ -19,7 +19,7 @@ export default class ShaderProperties {
 		this.diffuseInput = {
 			label: 'Diffuse Color',
 			value: 0,
-			options: ['Material Diffuse Color', 'Vertex Color 1', 'Vertex Color 2', 'Texture 1', 'Texture 2'],
+			options: ['Material Diffuse Color', 'Vertex Color', 'Texture 1', 'Texture 2'],
 		}
 		this.specularEnable = {
 			label: 'Specular Shading',
@@ -38,18 +38,18 @@ export default class ShaderProperties {
 	shadingEnabled() {return this.diffuseEnabled() || this.specularEnabled();}
 
 	inputType(value) {
-		if (value > 0 && value <= 2)
+		if (value > 0 && value <= 1)
 			return 'Vertex';
-		if (value > 2)
+		if (value > 1)
 			return 'Texture';
 		return 'Material';
 	}
 
 	inputIndex(value) {
-		if (value > 0 && value <= 2)
+		if (value > 0 && value <= 1)
 			return value-1;
-		if (value > 2)
-			return value-3;
+		if (value > 1)
+			return value-2;
 		return 0;
 	}
 
@@ -63,11 +63,11 @@ export default class ShaderProperties {
 		var count = 0;
 
 		var value = this.ambiantInput.value;
-		if (value <= 2)
+		if (value <= 1)
 			count = Math.max(count, value);
 
 		value = this.diffuseInput.value;
-		if (value <= 2)
+		if (value <= 1)
 			count = Math.max(count, value);
 
 		return count;
@@ -76,17 +76,16 @@ export default class ShaderProperties {
 	numberOfTextures() {
 		var count = 0;
 
-		var value = this.ambiantInput.value - 2;
+		var value = this.ambiantInput.value - 1;
 		count = Math.max(count, value);
 
-		value = this.diffuseInput.value - 2;
+		value = this.diffuseInput.value - 1;
 		count = Math.max(count, value);
 
 		return count;
 	}
 
 	numberOfUVs() {
-		// TODO: Update this to handle more than one UV.
 		return this.numberOfTextures() > 0 ? 1 : 0;
 	}
 

@@ -33,7 +33,7 @@ function buildStructs(properties, version) {
   src += 'struct Camera {\n';
   src += '  mat4 projection;\n';
   src += '  mat4 view;\n';
-  src += '  vec4 position;\n';
+  src += '  vec4 origin;\n';
   src += '};\n\n';
 
   // Model Struct
@@ -51,15 +51,15 @@ function buildStructs(properties, version) {
 function buildFunctions(properties, version) {
   var src = '';
 
-  // Transform To World Space
-  src += 'vec4 transform(Model m, vec4 v) {\n';
-  src += '  return m.transform * v;\n';
-  src += '}\n\n';
-
-  // Transform from World To Screen Space
-  src += 'vec4 transform(Camera c, vec4 v) {\n';
-  src += '  return c.projection * c.view * v;\n';
-  src += '}\n\n';
+  // // Transform To World Space
+  // src += 'vec4 transform(Model m, vec4 v) {\n';
+  // src += '  return m.transform * v;\n';
+  // src += '}\n\n';
+  //
+  // // Transform from World To Screen Space
+  // src += 'vec4 transform(Camera c, vec4 v) {\n';
+  // src += '  return c.projection * c.view * v;\n';
+  // src += '}\n\n';
 
   if (properties.shadingEnabled()) {
     // Quaternion Rotate Function
@@ -85,12 +85,12 @@ function buildInputs(properties, version) {
   // Add any vertex colors
   var numColors = properties.numberOfVertexColors();
   for (var i = 0; i < numColors; ++i)
-    src += version.vertexInput('vec4', 'color'+i);
+    src += version.vertexInput('vec4', 'color_'+i);
 
   // Add any texture coordinates
   var numUVs = properties.numberOfUVs();
   for (var i = 0; i < numUVs; ++i)
-    src += version.vertexInput('vec2', 'uv'+i);
+    src += version.vertexInput('vec2', 'uv_'+i);
 
   return src + '\n';
 }
@@ -115,6 +115,7 @@ function buildOutputs(properties, version) {
   if (properties.shadingEnabled()) {
     src += version.vertexOutput('vec3', 'v_position');
     src += version.vertexOutput('vec3', 'v_normal');
+    src += version.vertexOutput('vec3', 'v_view');
   }
 
   // Pass any vertex colors
@@ -136,24 +137,29 @@ function buildOutputs(properties, version) {
  */
 function buildMain(properties, version) {
   var src = 'void main() {\n';
-  src += '  vec4 pos = transform(model, position);\n';
-  src += '  gl_Position = transform(camera, pos);\n';
+  // Transform to world coordinates
+  src += '  vec4 world = model.transform * position;\n';
 
-  // Assign the position and the rotated normal
+  // Assign the position, normal and view vectors
   if (properties.shadingEnabled()) {
-    src += '  v_position = pos.xyz;\n';
+    src += '  v_position = world.xyz;\n';
     src += '  v_normal = rotate(model.rotation, normal.xyz);\n';
+    src += '  v_view = camera.origin.xyz - world.xyz;\n';
   }
 
   // Assign any vertex colors
   var numColors = properties.numberOfVertexColors();
   for (var i = 0; i < numColors; ++i)
-    src += '  v_color'+i + ' = color'+i + ';\n';
+    src += '  v_color'+i + ' = color_'+i + ';\n';
 
   // Assign any texture coordinates
   var numUVs = properties.numberOfUVs();
   for (var i = 0; i < numUVs; ++i)
-    src += '  v_uv'+i + ' = uv'+i + ';\n';
+    src += '  v_uv'+i + ' = uv_'+i + ';\n';
 
+  // Assign the projected position
+  src += '  gl_Position = camera.projection * camera.view * world;\n';
+
+  // Close the function
   return src + '}\n';
 }
